@@ -1,0 +1,498 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{FD326740-7E05-4A37-A1B4-34948BCB64AD}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ironclad.Features.UI</RootNamespace>
+    <AssemblyName>ironclad.Features.UI</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <UseIISExpress>false</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - MySql|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - MySql|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - Firebird|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Firebird|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - pgsql|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - pgsql|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - SqlCe|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - SqlCe|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - SQLite|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - SQLite|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Images\add.svg" />
+    <Content Include="Images\cal-12.jpg" />
+    <Content Include="Images\copy.svg" />
+    <Content Include="Images\cut.svg" />
+    <Content Include="Images\delete.svg" />
+    <Content Include="Images\edit.svg" />
+    <Content Include="Images\fullcalendar\ui-bg_diagonals-thick_90_eeeeee_40x40.png" />
+    <Content Include="Images\fullcalendar\ui-bg_glass_100_e4f1fb_1x400.png" />
+    <Content Include="Images\fullcalendar\ui-bg_glass_50_3baae3_1x400.png" />
+    <Content Include="Images\fullcalendar\ui-bg_glass_80_d7ebf9_1x400.png" />
+    <Content Include="Images\fullcalendar\ui-bg_highlight-hard_100_f2f5f7_1x100.png" />
+    <Content Include="Images\fullcalendar\ui-bg_highlight-hard_70_000000_1x100.png" />
+    <Content Include="Images\fullcalendar\ui-bg_highlight-soft_100_deedf7_1x100.png" />
+    <Content Include="Images\fullcalendar\ui-bg_highlight-soft_25_ffef8f_1x100.png" />
+    <Content Include="Images\fullcalendar\ui-icons_2694e8_256x240.png" />
+    <Content Include="Images\fullcalendar\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Images\fullcalendar\ui-icons_3d80b3_256x240.png" />
+    <Content Include="Images\fullcalendar\ui-icons_72a7cf_256x240.png" />
+    <Content Include="Images\fullcalendar\ui-icons_ffffff_256x240.png" />
+    <Content Include="Images\loading.svg" />
+    <Content Include="Images\paste.svg" />
+    <Content Include="Images\quit.svg" />
+    <Content Include="Reservations\AddReservation.ascx" />
+    <Content Include="Reservations\ReservationsModule.ascx" />
+    <Content Include="Scripts\fullcalendar\fullcalendar.js" />
+    <Content Include="Scripts\fullcalendar\fullcalendar.min.js" />
+    <Content Include="Scripts\fullcalendar\gcal.js" />
+    <Content Include="Scripts\fullcalendar\gcal.min.js" />
+    <Content Include="Scripts\fullcalendar\locale-all.js" />
+    <Content Include="Scripts\fullcalendar\moment.min.js" />
+    <Content Include="Scripts\fullcalendar\reservations.js" />
+    <Content Include="Scripts\fullcalendar\jQuery-contextMenu.js" />
+    <Content Include="Styles\fullcalendar\fullcalendar.css" />
+    <Content Include="Styles\fullcalendar\fullcalendar.min.css" />
+    <Content Include="Styles\fullcalendar\fullcalendar.print.css" />
+    <Content Include="Styles\fullcalendar\fullcalendar.print.min.css" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_GlobalResources\ReservationsResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ReservationsResources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Tools\RWLock.cs" />
+    <Compile Include="Tools\RwLockExtensions.cs" />
+    <Compile Include="Tools\MapViewer.cs" />
+    <Compile Include="Tools\EmptyArray.cs" />
+    <Compile Include="Tools\EmptyList.cs" />
+    <Compile Include="Tools\IMapViewer.cs" />
+    <Compile Include="Tools\List.cs" />
+    <Compile Include="Tools\ListViewer.cs" />
+    <Compile Include="Tools\IListViewer.cs" />
+    <Compile Include="Tools\EnumerableExtensions.cs" />
+    <Compile Include="Tools\ICountable.cs" />
+    <Compile Include="Tools\Pair.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reservations\AddReservation.ascx.cs">
+      <DependentUpon>AddReservation.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Reservations\AddReservation.ascx.designer.cs">
+      <DependentUpon>AddReservation.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Reservations\Components\FullCalendarEvent.cs" />
+    <Compile Include="Reservations\Components\ReservationsConfiguration.cs" />
+    <Compile Include="Reservations\Components\ReservationsContentDeleteHandler.cs" />
+    <Compile Include="Reservations\Components\ReservationEventIndexBuilderProvider.cs" />
+    <Compile Include="Reservations\Components\SitePreDeleteEventCalendarHandler.cs" />
+    <Compile Include="Reservations\ReservationsHandler.ashx.cs">
+      <DependentUpon>ReservationsHandler.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Reservations\ReservationsModule.ascx.cs">
+      <DependentUpon>ReservationsModule.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Reservations\ReservationsModule.ascx.designer.cs">
+      <DependentUpon>ReservationsModule.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Tools\SplitResult.cs" />
+    <Compile Include="Tools\StringExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Brettle.Web.NeatHtml\Brettle.Web.NeatHtml.csproj">
+      <Project>{d8a4d1e0-3827-4af6-85b3-564d433495bf}</Project>
+      <Name>Brettle.Web.NeatHtml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ironclad.Business\ironclad.Business.csproj">
+      <Project>{35495664-5095-42b8-83c8-52f45934579d}</Project>
+      <Name>ironclad.Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ironclad.Data.MSSQL\ironclad.Data.MSSQL.csproj">
+      <Project>{88FD232E-B790-4400-8A6D-B2D273471858}</Project>
+      <Name>ironclad.Data.MSSQL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Business.WebHelpers\mojoPortal.Business.WebHelpers.csproj">
+      <Project>{4EAD30EC-4F97-4F38-8530-1B7EDDB8FC8E}</Project>
+      <Name>mojoPortal.Business.WebHelpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Business\mojoPortal.Business.csproj">
+      <Project>{8582D51E-126B-4D64-B080-07AD8245B38F}</Project>
+      <Name>mojoPortal.Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Features.Business\mojoPortal.Features.Business.csproj">
+      <Project>{65849992-8F44-4480-9494-1CA0D6325795}</Project>
+      <Name>mojoPortal.Features.Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Net\mojoPortal.Net.csproj">
+      <Project>{30916752-1A97-49CA-95D6-81A5F784EEB5}</Project>
+      <Name>mojoPortal.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Web.Controls\mojoPortal.Web.Controls.csproj">
+      <Project>{A2DCD1E2-A5C3-4E37-A5F2-093659BC1C38}</Project>
+      <Name>mojoPortal.Web.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Web.Editor\mojoPortal.Web.Editor.csproj">
+      <Project>{4F6DDA2C-C9B8-45B2-AADA-3FF922317661}</Project>
+      <Name>mojoPortal.Web.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Web.Framework\mojoPortal.Web.Framework.csproj">
+      <Project>{E0D12031-BFDD-4069-9024-8B00A2AA6DBC}</Project>
+      <Name>mojoPortal.Web.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Web\mojoPortal.Web.csproj">
+      <Project>{8E511D65-4779-4689-82D4-811D3FE6866E}</Project>
+      <Name>mojoPortal.Web</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\surveyfeature\FeatureDefinitions\0000_Survey.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaInstallScripts\mssql\0.0.1.1.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaInstallScripts\mysql\0.0.1.0.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.2.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.3.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.4.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.5.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.6.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.7.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.8.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.0.9.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.1.0.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.1.1.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mssql\0.0.1.2.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mysql\0.0.1.1.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\mysql\0.0.1.2.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\surveyfeature\SchemaInstallScripts\firebirdsql\0.0.1.1.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaInstallScripts\firebirdsql\0.0.1.1\00002tables.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\firebirdsql\0.0.1.2.config" />
+    <Content Include="Setup\applications\surveyfeature\SchemaUpgradeScripts\firebirdsql\0.0.1.2\0.0.1.2.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\surveyfeature\SchemaInstallScripts\pgsql\0.0.1.2.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\surveyfeature\SchemaInstallScripts\sqlite\0.0.1.2.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\ProviderConfig\indexbuilders\blogindexbuilder.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\ProviderConfig\indexbuilders\forumthreadindexbuilder.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\ProviderConfig\indexbuilders\eventcalendarindexbuilder.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\ProviderConfig\indexbuilders\galleryindexbuilder.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\ProviderConfig\indexbuilders\linksindexbuilder.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\sharedfiles\FeatureDefinitions\90000_SharedFilesModule.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\ProviderConfig\indexbuilders\sharedfilesindexbuilder.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\xmlmodule\FeatureDefinitions\90300_XmlXslModule.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\firebirdsql\0.0.0.1.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\firebirdsql\0.0.0.1\00000generators.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\firebirdsql\0.0.0.1\00002tables.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\firebirdsql\0.0.0.1\00004procedures.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\firebirdsql\0.0.0.1\00005procedures.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\mssql\0.0.0.1.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\mysql\0.0.0.1.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\pgsql\0.0.0.1.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaInstallScripts\sqlite\0.0.0.1.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\sharedfiles\SchemaUpgradeScripts\firebirdsql\0.0.0.2.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaUpgradeScripts\mssql\0.0.0.2.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaUpgradeScripts\mysql\0.0.0.2.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaUpgradeScripts\pgsql\0.0.0.2.config" />
+    <Content Include="Setup\applications\sharedfiles\SchemaUpgradeScripts\sqlite\0.0.0.2.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\twitter\FeatureDefinitions\90000_TwitterProfileModule.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\twitter\FeatureDefinitions\95000_TwitterSearchModule.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="App_MasterPages\" />
+    <Folder Include="Data\" />
+    <Folder Include="Setup\applications\reservations\SchemaUpgradeScripts\" />
+    <Folder Include="Setup\applications\sharedfiles\SchemaUpgradeScripts\firebirdsql\0.0.0.2\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_GlobalResources\ReservationsResources.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ReservationsResources.Designer.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\reservations\FeatureDefinitions\10000_ReservationsModule.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Setup\applications\reservations\SchemaInstallScripts\mssql\0.0.0.1.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Reservations\ReservationsHandler.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Styles\fullcalendar\jquery.contextMenu.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Styles\fullcalendar\font\context-menu-icons.eot" />
+    <Content Include="Styles\fullcalendar\font\context-menu-icons.ttf" />
+    <Content Include="Styles\fullcalendar\font\context-menu-icons.woff" />
+    <Content Include="Styles\fullcalendar\font\context-menu-icons.woff2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>57646</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /s /y /d "$(ProjectDir)bin\ironclad.Features.UI.dll" "$(SolutionDir)Web\bin\"
+xcopy /s /y /d "$(ProjectDir)bin\ironclad.Business.dll" "$(SolutionDir)Web\bin\"
+xcopy /s /y /d "$(ProjectDir)bin\ironclad.Data.dll" "$(SolutionDir)Web\bin\"
+
+xcopy /s /y /d "$(ProjectDir)App_GlobalResources\*.resx" "$(SolutionDir)Web\App_GlobalResources\"
+
+xcopy /s /y /d "$(ProjectDir)Setup\*" "$(SolutionDir)Web\Setup"
+
+xcopy /s /y /d "$(ProjectDir)Reservations\*.aspx" "$(SolutionDir)Web\Reservations\"
+xcopy /s /y /d "$(ProjectDir)Reservations\*.ascx" "$(SolutionDir)Web\Reservations\"
+xcopy /s /y /d "$(ProjectDir)Reservations\*.ashx" "$(SolutionDir)Web\Reservations\"
+xcopy /s /y /d "$(ProjectDir)Data\*" "$(SolutionDir)Web\Data"
+xcopy /s /y /d "$(ProjectDir)Services\*.ashx" "$(SolutionDir)Web\Services\"
+
+xcopy /s /y /d "$(ProjectDir)Setup\*" "$(SolutionDir)Web\Setup"
+
+xcopy /s /y /d "$(ProjectDir)Scripts\*.js" "$(SolutionDir)Web\ClientScript\"
+xcopy /s /y /d "$(ProjectDir)Styles\*.*" "$(SolutionDir)Web\Data\style\"
+xcopy /s /y /d "$(ProjectDir)Images\fullcalendar\*.png" "$(SolutionDir)Web\Data\SiteImages\fullcalendar\"
+xcopy /s /y /d "$(ProjectDir)Images\*.svg" "$(SolutionDir)Web\Data\SiteImages\icons\"</PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+</Project>
