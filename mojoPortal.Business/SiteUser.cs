@@ -173,7 +173,7 @@ namespace mojoPortal.Business
         private decimal totalRevenue = 0;
         private bool mustChangePwd = false;
 
-        private string timeZoneId = "Eastern Standard Time"; //default
+        private string timeZoneId = "Central Standard Time"; //default
         private string newEmail = string.Empty;
         private Guid emailChangeGuid = Guid.Empty;
         private string editorPreference = string.Empty; // use site default
@@ -182,7 +182,8 @@ namespace mojoPortal.Business
         private bool rolesChanged = false;
 
         private string authorBio = string.Empty;
-
+		private bool allowPasswordChange = true;
+		private bool readonlyUserProfile = false;
 
         private string passwordHash = string.Empty; // used for asp.net identity pwd field is still used for membership
 
@@ -770,7 +771,7 @@ namespace mojoPortal.Business
 
 		private void GetUser(int userId)
 		{
-            using (IDataReader reader = DBSiteUser.GetSingleUser(userId))
+            using (IDataReader reader = DBSiteUser.GetSingleUser(userId, siteID))
             {
                 GetUser(reader);
             }
@@ -779,7 +780,7 @@ namespace mojoPortal.Business
 
         private void GetUser(Guid userGuid)
         {
-            using (IDataReader reader = DBSiteUser.GetSingleUser(userGuid))
+            using (IDataReader reader = DBSiteUser.GetSingleUser(userGuid, siteID))
             {
                 GetUser(reader);
             }
@@ -2252,10 +2253,10 @@ namespace mojoPortal.Business
 			return DBSiteUser.UserCount(siteId);
 		}
 
-        public static int UserCount(int siteId, String userNameBeginsWith)
+        public static int UserCount(int siteId, string userNameBeginsWith, string nameFilterMode)
         {
             if (UseRelatedSiteMode) { siteId = RelatedSiteID; }
-            return DBSiteUser.UserCount(siteId, userNameBeginsWith);
+            return DBSiteUser.UserCount(siteId, userNameBeginsWith, nameFilterMode);
         }
 
         public static int UsersOnlineSinceCount(int siteId, DateTime sinceTime)
@@ -2376,9 +2377,10 @@ namespace mojoPortal.Business
             int siteId,
             int pageNumber, 
             int pageSize, 
-            string userNameBeginsWith,
+            string beginsWith,
             int sortMode,
-            out int totalPages)
+			string nameFilterMode,
+			out int totalPages)
         {
             //sortMode: 0 = DisplayName asc, 1 = JoinDate desc, 2 = Last, First
 
@@ -2391,7 +2393,7 @@ namespace mojoPortal.Business
 
             using (IDataReader reader
                 = DBSiteUser.GetUserListPage(
-                    siteId, pageNumber, pageSize, userNameBeginsWith, sortMode, out totalPages))
+                    siteId, pageNumber, pageSize, beginsWith, sortMode, nameFilterMode, out totalPages))
             {
 
                 while (reader.Read())

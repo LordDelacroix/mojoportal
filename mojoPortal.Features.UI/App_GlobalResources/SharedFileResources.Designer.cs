@@ -268,6 +268,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All Users.
+        /// </summary>
+        internal static string RolesAllUsersRole {
+            get {
+                return ResourceManager.GetString("RolesAllUsersRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Roles That Can View This Item.
+        /// </summary>
+        internal static string RolesThatCanViewThisItem {
+            get {
+                return ResourceManager.GetString("RolesThatCanViewThisItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Root.
         /// </summary>
         internal static string Root {
@@ -300,6 +318,15 @@ namespace Resources {
         internal static string SelectFilesButton {
             get {
                 return ResourceManager.GetString("SelectFilesButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set child items to these roles?.
+        /// </summary>
+        internal static string SetChildrensRolesToParentFolder {
+            get {
+                return ResourceManager.GetString("SetChildrensRolesToParentFolder", resourceCulture);
             }
         }
         

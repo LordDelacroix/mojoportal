@@ -53,7 +53,7 @@ namespace mojoPortal.Web.Controllers
 				}
 			}
 
-			if ((fileSystem == null) || (!fileSystem.UserHasUploadPermission))
+			if ((fileSystem == null) || (!fileSystem.UserHasBrowsePermission))
 			{
 				return new FileService.ReturnObject(ReturnResult(OpResult.Denied));
 			}
@@ -111,7 +111,7 @@ namespace mojoPortal.Web.Controllers
 				throw new HttpResponseException(HttpStatusCode.InternalServerError);
 			}
 
-			if ((fileSystem == null) || (!fileSystem.UserHasUploadPermission))
+			if ((fileSystem == null) || (!fileSystem.UserHasBrowsePermission))
 			{
 				throw new HttpResponseException(HttpStatusCode.Unauthorized);
 			}
@@ -161,11 +161,7 @@ namespace mojoPortal.Web.Controllers
 
 			virtualPath = fileSystem.VirtualRoot;
 
-			if ((WebUser.IsAdminOrContentAdmin) || (SiteUtils.UserIsSiteEditor()))
-			{
-				allowedExtensions = WebConfigSettings.AllowedUploadFileExtensions;
-			}
-			else if (WebUser.IsInRoles(siteSettings.GeneralBrowseAndUploadRoles))
+			if (WebUser.IsAdminOrContentAdmin || SiteUtils.UserIsSiteEditor() || WebUser.IsInRoles(siteSettings.GeneralBrowseAndUploadRoles + siteSettings.GeneralBrowseRoles))
 			{
 				allowedExtensions = WebConfigSettings.AllowedUploadFileExtensions;
 			}
@@ -228,6 +224,19 @@ namespace mojoPortal.Web.Controllers
 			var files = fileSystem.GetFileList(FilePath(requestPath)).Select(Mapper.Map<WebFile, FileServiceDto>).ToList();
 			var allowedFiles = new List<FileServiceDto>();
 			var folders = fileSystem.GetFolderList(FilePath(requestPath)).Select(Mapper.Map<WebFolder, FileServiceDto>).ToList();
+			if (!String.IsNullOrWhiteSpace(fileSystem.Permission.UserFolder) && fileSystem.Permission.UserFolder != fileSystem.VirtualRoot)
+			{
+				var userFolder = new List<WebFolder>() {
+					new WebFolder {
+						VirtualPath = fileSystem.Permission.UserFolder,
+						Path = fileSystem.Permission.UserFolder,
+						Created = DateTime.Now,
+						Modified = DateTime.Now,
+						Name = Resource.UserFolder
+					}
+				};
+				folders.AddRange(userFolder.Select(Mapper.Map<WebFolder, FileServiceDto>).ToList());
+			}
 			var type = WebUtils.ParseStringFromQueryString("type", "file");
 
 			foreach (var folder in folders)
@@ -745,7 +754,7 @@ namespace mojoPortal.Web.Controllers
 			switch (type)
 			{
 				case "folder":
-					return Path.GetFileName(item).ToCleanFileName(WebConfigSettings.ForceLowerCaseForFolderCreation);
+					return Path.GetFileName(item).ToCleanFolderName(WebConfigSettings.ForceLowerCaseForFolderCreation);
 				case "file":
 				default:
 					return Path.GetFileName(item).ToCleanFileName(WebConfigSettings.ForceLowerCaseForUploadedFiles);

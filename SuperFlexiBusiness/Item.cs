@@ -1,6 +1,6 @@
 ﻿// Author:					i7MEDIA
 // Created:					2015-3-6
-// Last Modified:			2017-01-17
+// Last Modified:			2019-04-03
 // You must not remove this notice, or any other, from this software.
 
 using System;
@@ -179,6 +179,8 @@ namespace SuperFlexiBusiness
 					this.sortOrder = Convert.ToInt32(reader["SortOrder"]);
 					this.createdUtc = Convert.ToDateTime(reader["CreatedUtc"]);
 					this.lastModUtc = Convert.ToDateTime(reader["LastModUtc"]);
+					viewRoles = reader["ViewRoles"].ToString();
+					editRoles = reader["EditRoles"].ToString();
 				}
 
             }
@@ -194,15 +196,17 @@ namespace SuperFlexiBusiness
             int newID = 0;
 
             newID = DBItems.Create(
-                this.siteGuid,
-                this.featureGuid,
-                this.moduleGuid,
-                this.moduleID,
-                this.definitionGuid,
-                this.itemGuid,
-                this.sortOrder,
-                this.createdUtc,
-                this.lastModUtc);
+                siteGuid,
+                featureGuid,
+                moduleGuid,
+                moduleID,
+                definitionGuid,
+                itemGuid,
+                sortOrder,
+                createdUtc,
+                lastModUtc,
+				viewRoles,
+				editRoles);
 
             this.itemID = newID;
 
@@ -227,15 +231,17 @@ namespace SuperFlexiBusiness
         {
 
             bool result = DBItems.Update(
-                this.siteGuid,
-                this.featureGuid,
-                this.moduleGuid,
-                this.moduleID,
-                this.definitionGuid,
-                this.itemGuid,
-                this.sortOrder,
-                this.createdUtc,
-                this.lastModUtc);
+                siteGuid,
+                featureGuid,
+                moduleGuid,
+                moduleID,
+                definitionGuid,
+                itemGuid,
+                sortOrder,
+                createdUtc,
+                lastModUtc,
+				viewRoles,
+				editRoles);
 
             if (result)
             {
@@ -246,10 +252,6 @@ namespace SuperFlexiBusiness
             return result;
 
         }
-
-
-
-
 
         #endregion
 
@@ -330,10 +332,10 @@ namespace SuperFlexiBusiness
         /// </summary>
         /// <param name="definitionGuid"> definitionGuid </param>
         /// <returns>bool</returns>
-        public static bool DeleteByDefinition(Guid definitionGuid)
-        {
-            return DBItems.DeleteByDefinition(definitionGuid);
-        }
+        //public static bool DeleteByDefinition(Guid definitionGuid)
+        //{
+        //    return DBItems.DeleteByDefinition(definitionGuid);
+        //}
 
 		/// <summary>
 		/// Gets a count of item. 
@@ -369,7 +371,8 @@ namespace SuperFlexiBusiness
                     item.sortOrder = Convert.ToInt32(reader["SortOrder"]);
                     item.createdUtc = Convert.ToDateTime(reader["CreatedUtc"]);
                     item.lastModUtc = Convert.ToDateTime(reader["LastModUtc"]);
-
+					item.viewRoles = reader["ViewRoles"].ToString();
+					item.editRoles = reader["EditRoles"].ToString();
 					// Not all methods will use TotalRows but there is no sense in having an extra method to load the reader
 					// so, we'll catch the error and do nothing with it because we are expecting it
 					// the if statement should keep any problems at bay but we still use try/catch in case someone inadvertently 
@@ -403,9 +406,9 @@ namespace SuperFlexiBusiness
         /// <summary>
         /// Gets an IList with all instances of item.
         /// </summary>
-        public static List<Item> GetAll()
+        public static List<Item> GetAll(Guid siteGuid)
         {
-            IDataReader reader = DBItems.GetAll();
+            IDataReader reader = DBItems.GetAll(siteGuid);
             return LoadListFromReader(reader);
 
         }
@@ -416,12 +419,12 @@ namespace SuperFlexiBusiness
         /// <param name="pageNumber">The page number.</param>
         /// <param name="pageSize">Size of the page.</param>
         /// <param name="totalPages">total pages</param>
-        public static List<Item> GetPage(int pageNumber, int pageSize, out int totalPages)
-        {
-            totalPages = 1;
-            IDataReader reader = DBItems.GetPage(pageNumber, pageSize, out totalPages);
-            return LoadListFromReader(reader);
-        }
+        //public static List<Item> GetPage(int pageNumber, int pageSize, out int totalPages)
+        //{
+        //    totalPages = 1;
+        //    IDataReader reader = DBItems.GetPage(pageNumber, pageSize, out totalPages);
+        //    return LoadListFromReader(reader);
+        //}
 
         /// <summary>
         /// Gets an IList with all items for a module instance
@@ -490,14 +493,67 @@ namespace SuperFlexiBusiness
 		}
 
 		/// <summary>
+		/// Gets a list of Items within a "page" for a Definition
+		/// </summary>
+		/// <param name="moduleId"></param>
+		/// <param name="pageNumber"></param>
+		/// <param name="pageSize"></param>
+		/// <param name="totalPages"></param>
+		/// <param name="searchTerm"></param>
+		/// <param name="searchField"></param>
+		/// <param name="descending"></param>
+		/// <returns></returns>
+		public static List<Item> GetPageForDefinition(
+			Guid defGuid,
+			Guid siteGuid,
+			int pageNumber,
+			int pageSize,
+			out int totalPages,
+			out int totalRows,
+			string searchTerm = "",
+			string searchField = "",
+			bool descending = false)
+		{
+			totalPages = 1;
+
+			IDataReader reader = DBItems.GetPageForDefinition(defGuid, siteGuid, pageNumber, pageSize, searchTerm, searchField, descending);
+
+			var items = LoadListFromReader(reader, true);
+
+			totalRows = _totalRows;
+
+			if (pageSize > 0)
+			{
+				totalPages = totalRows / pageSize;
+			}
+			if (totalRows <= pageSize)
+			{
+				totalPages = 1;
+			}
+			else
+			{
+				int remainder;
+				Math.DivRem(totalRows, pageSize, out remainder);
+				if (remainder > 0)
+				{
+					totalPages += 1;
+				}
+			}
+
+			return items;
+		}
+
+
+
+		/// <summary>
 		/// Gets an IList with all items for a single definition
 		/// </summary>
 		/// <param name="fieldDefinitionGuid"></param>
 		/// <param name="descending"></param>
 		/// <returns></returns>
-		public static List<Item> GetAllForDefinition(Guid fieldDefinitionGuid, bool descending = false)
+		public static List<Item> GetAllForDefinition(Guid fieldDefinitionGuid, Guid siteGuid, bool descending = false)
         {
-            IDataReader reader = DBItems.GetAllForDefinition(fieldDefinitionGuid);
+            IDataReader reader = DBItems.GetAllForDefinition(fieldDefinitionGuid, siteGuid);
             List<Item> items = LoadListFromReader(reader);
             if (descending)
             {
@@ -532,8 +588,9 @@ namespace SuperFlexiBusiness
             dataTable.Columns.Add("SortOrder", typeof(int));
             dataTable.Columns.Add("CreatedUtc", typeof(DateTime));
             dataTable.Columns.Add("ModuleTitle", typeof(string));
-            dataTable.Columns.Add("ViewRoles", typeof(string));
-            dataTable.Columns.Add("PublishBeginDate", typeof(DateTime));
+            dataTable.Columns.Add("ModuleViewRoles", typeof(string));
+            dataTable.Columns.Add("ItemViewRoles", typeof(string));
+			dataTable.Columns.Add("PublishBeginDate", typeof(DateTime));
             dataTable.Columns.Add("PublishEndDate", typeof(DateTime));
             using (IDataReader reader = DBItems.GetByCMSPage(siteGuid, pageId))
             {
@@ -547,9 +604,10 @@ namespace SuperFlexiBusiness
                     row["SortOrder"] = reader["sortOrder"];
                     row["CreatedUtc"] = Convert.ToDateTime(reader["createdUtc"]);
                     row["ModuleTitle"] = reader["moduleTitle"];
-                    row["ViewRoles"] = reader["viewRoles"];
+                    row["ModuleViewRoles"] = reader["moduleViewRoles"];
+                    row["ItemViewRoles"] = reader["itemViewRoles"];
 
-                    if (reader["publishBeginDate"] != DBNull.Value)
+					if (reader["publishBeginDate"] != DBNull.Value)
                     {
                         row["PublishBeginDate"]
                             = Convert.ToDateTime(reader["publishBeginDate"]);

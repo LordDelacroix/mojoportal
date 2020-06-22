@@ -1,7 +1,3 @@
-/// Author:					
-/// Created:				2007-11-03
-/// Last Modified:			2014-07-24
-/// 
 /// The use and distribution terms for this software are covered by the 
 /// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)  
 /// which can be found in the file CPL.TXT at the root of this distribution.
@@ -13,6 +9,7 @@
 /// Note moved into separate class file from dbPortal 2007-11-03
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Data.Common;
@@ -104,10 +101,10 @@ namespace mojoPortal.Data
             sqlCommand.Append("WHERE SiteID = :SiteID ");
             sqlCommand.Append("AND IsDeleted = 0 ");
             sqlCommand.Append("AND ( ");
-            sqlCommand.Append("(Name LIKE :Query) ");
-            sqlCommand.Append("OR (FirstName LIKE :Query) ");
-            sqlCommand.Append("OR (LastName LIKE :Query) ");
-            sqlCommand.Append(") ");
+            sqlCommand.Append("(lower(Name) LIKE lower(:Query)) ");
+			sqlCommand.Append("OR (lower(FirstName) LIKE lower(:Query)) ");
+			sqlCommand.Append("OR (lower(LastName) LIKE lower(:Query)) ");
+			sqlCommand.Append(") ");
 
             sqlCommand.Append("UNION ");
 
@@ -122,7 +119,7 @@ namespace mojoPortal.Data
             sqlCommand.Append("FROM mp_Users ");
             sqlCommand.Append("WHERE SiteID = :SiteID ");
             sqlCommand.Append("AND IsDeleted = 0 ");
-            sqlCommand.Append("AND Email LIKE :Query  ");
+            sqlCommand.Append("(lower(Email) LIKE lower(:Query)) ");
 
             sqlCommand.Append("ORDER BY SiteUser ");
             sqlCommand.Append("LIMIT " + rowsToGet.ToString());
@@ -159,10 +156,10 @@ namespace mojoPortal.Data
             sqlCommand.Append("WHERE SiteID = :SiteID ");
             sqlCommand.Append("AND IsDeleted = 0 ");
             sqlCommand.Append("AND ( ");
-            sqlCommand.Append("(Email LIKE :Query) ");
-            sqlCommand.Append("OR (Name LIKE :Query) ");
-            sqlCommand.Append("OR (FirstName LIKE :Query) ");
-            sqlCommand.Append("OR (LastName LIKE :Query) ");
+            sqlCommand.Append("(lower(Email) LIKE lower(:Query)) ");
+            sqlCommand.Append("OR (lower(Name) LIKE lower(:Query)) ");
+            sqlCommand.Append("OR (lower(FirstName) LIKE lower(:Query)) ");
+            sqlCommand.Append("OR (lower(LastName) LIKE lower(:Query)) ");
             sqlCommand.Append(") ");
 
             sqlCommand.Append("ORDER BY Email ");
@@ -253,18 +250,26 @@ namespace mojoPortal.Data
             return count;
         }
 
-        public static int UserCount(int siteId, String userNameBeginsWith)
+        public static int UserCount(int siteId, String nameBeginsWith, string nameFilterMode)
         {
             StringBuilder sqlCommand = new StringBuilder();
-            sqlCommand.Append("SELECT COUNT(*) FROM mp_Users ");
-            sqlCommand.Append("WHERE SiteID = :SiteID ");
-            sqlCommand.Append("AND IsDeleted = 0 ");
-            sqlCommand.Append("AND ProfileApproved = 1 ");
+            sqlCommand.Append(@"SELECT COUNT(*) FROM mp_Users 
+				WHERE SiteID = :SiteID 
+				AND IsDeleted = 0 
+				AND ProfileApproved = 1 ");
 
-            if (userNameBeginsWith.Length == 1)
-            {
-                sqlCommand.Append("AND Name like :UserNameBeginsWith || '%' ");
-            }
+
+			switch (nameFilterMode)
+			{
+				case "display":
+				default:
+					sqlCommand.Append("AND lower(Name) LIKE lower(:BeginsWith) ");
+					break;
+				case "lastname":
+					sqlCommand.Append("AND lower(LastName) LIKE lower(:BeginsWith) ");
+					break;
+			}
+
 
             sqlCommand.Append("; ");
 
@@ -275,9 +280,9 @@ namespace mojoPortal.Data
             arParams[0].Direction = ParameterDirection.Input;
             arParams[0].Value = siteId;
 
-            arParams[1] = new SqliteParameter(":UserNameBeginsWith", DbType.String);
+            arParams[1] = new SqliteParameter(":BeginsWith", DbType.String);
             arParams[1].Direction = ParameterDirection.Input;
-            arParams[1].Value = userNameBeginsWith;
+            arParams[1].Value = nameBeginsWith;
 
 
             int count = Convert.ToInt32(
@@ -342,51 +347,52 @@ namespace mojoPortal.Data
             return count;
         }
 
-        public static int Count(int siteId, string userNameBeginsWith)
-        {
-            StringBuilder sqlCommand = new StringBuilder();
-            sqlCommand.Append("SELECT Count(*) FROM mp_Users WHERE SiteID = :SiteID ");
-            sqlCommand.Append("AND IsDeleted = 0 ");
-            sqlCommand.Append("AND ProfileApproved = 1 ");
+        //public static int Count(int siteId, string userNameBeginsWith)
+        //{
+        //    StringBuilder sqlCommand = new StringBuilder();
+        //    sqlCommand.Append("SELECT Count(*) FROM mp_Users WHERE SiteID = :SiteID ");
+        //    sqlCommand.Append("AND IsDeleted = 0 ");
+        //    sqlCommand.Append("AND ProfileApproved = 1 ");
 
-            if (userNameBeginsWith.Length > 0)
-            {
-                sqlCommand.Append(" AND Name LIKE :UserNameBeginsWith ");
-            }
-            sqlCommand.Append(" ;  ");
+        //    if (userNameBeginsWith.Length > 0)
+        //    {
+        //        sqlCommand.Append(" AND Name LIKE :UserNameBeginsWith ");
+        //    }
+        //    sqlCommand.Append(" ;  ");
 
-            SqliteParameter[] arParams = new SqliteParameter[2];
+        //    SqliteParameter[] arParams = new SqliteParameter[2];
 
-            arParams[0] = new SqliteParameter(":SiteID", DbType.Int32);
-            arParams[0].Direction = ParameterDirection.Input;
-            arParams[0].Value = siteId;
+        //    arParams[0] = new SqliteParameter(":SiteID", DbType.Int32);
+        //    arParams[0].Direction = ParameterDirection.Input;
+        //    arParams[0].Value = siteId;
 
-            arParams[1] = new SqliteParameter(":UserNameBeginsWith", DbType.String);
-            arParams[1].Direction = ParameterDirection.Input;
-            arParams[1].Value = userNameBeginsWith + "%";
+        //    arParams[1] = new SqliteParameter(":UserNameBeginsWith", DbType.String);
+        //    arParams[1].Direction = ParameterDirection.Input;
+        //    arParams[1].Value = userNameBeginsWith + "%";
 
-            int count = Convert.ToInt32(SqliteHelper.ExecuteScalar(
-                GetConnectionString(),
-                sqlCommand.ToString(),
-                arParams));
+        //    int count = Convert.ToInt32(SqliteHelper.ExecuteScalar(
+        //        GetConnectionString(),
+        //        sqlCommand.ToString(),
+        //        arParams));
 
-            return count;
+        //    return count;
 
-        }
+        //}
 
         public static IDataReader GetUserListPage(
             int siteId,
             int pageNumber,
             int pageSize,
-            string userNameBeginsWith,
+            string beginsWith,
             int sortMode,
+			string nameFilterMode,
             out int totalPages)
         {
             StringBuilder sqlCommand = new StringBuilder();
             int pageLowerBound = (pageSize * pageNumber) - pageSize;
 
             int totalRows
-                = UserCount(siteId, userNameBeginsWith);
+                = UserCount(siteId, beginsWith, nameFilterMode);
             totalPages = 1;
             if (pageSize > 0) totalPages = totalRows / pageSize;
 
@@ -404,19 +410,23 @@ namespace mojoPortal.Data
                 }
             }
 
-            sqlCommand.Append("SELECT		u.*,  ");
-            sqlCommand.Append(" " + totalPages.ToString() + " As TotalPages  ");
-            sqlCommand.Append("FROM	mp_Users u  ");
+            sqlCommand.Append($@"SELECT u.*, {totalPages.ToString()} As TotalPages  
+				FROM mp_Users u  
+				WHERE u.ProfileApproved = 1 
+				AND u.SiteID = :SiteID ");
 
-            sqlCommand.Append("WHERE u.ProfileApproved = 1   ");
-            sqlCommand.Append("AND u.SiteID = :SiteID   ");
+			switch (nameFilterMode)
+			{
+				case "display":
+				default:
+					sqlCommand.Append("AND lower(Name) LIKE lower(:BeginsWith) ");
+					break;
+				case "lastname":
+					sqlCommand.Append("AND lower(LastName) LIKE lower(:BeginsWith) ");
+					break;
+			}
 
-            if (userNameBeginsWith.Length > 0)
-            {
-                sqlCommand.Append(" AND u.Name LIKE :UserNameBeginsWith ");
-            }
-
-            switch (sortMode)
+			switch (sortMode)
             {
                 case 1:
                 sqlCommand.Append(" ORDER BY u.DateCreated DESC ");
@@ -447,7 +457,7 @@ namespace mojoPortal.Data
 
             arParams[2] = new SqliteParameter(":UserNameBeginsWith", DbType.String);
             arParams[2].Direction = ParameterDirection.Input;
-            arParams[2].Value = userNameBeginsWith + "%";
+            arParams[2].Value = beginsWith + "%";
 
             arParams[3] = new SqliteParameter(":SiteID", DbType.Int32);
             arParams[3].Direction = ParameterDirection.Input;
@@ -468,22 +478,19 @@ namespace mojoPortal.Data
             sqlCommand.Append("AND DisplayInMemberList = 1 ");
             sqlCommand.Append("AND IsDeleted = 0 ");
 
-            if (searchInput.Length > 0)
-            {
-                sqlCommand.Append(" AND ");
-                sqlCommand.Append("(");
-
-                sqlCommand.Append(" (Name LIKE :SearchInput) ");
-                sqlCommand.Append(" OR ");
-                sqlCommand.Append(" (LoginName LIKE :SearchInput) ");
-                //sqlCommand.Append(" OR ");
-                //sqlCommand.Append(" (Email LIKE :SearchInput) ");
-
-                sqlCommand.Append(")");
-
-                
-            }
-            sqlCommand.Append(" ;  ");
+			if (searchInput.Length > 0)
+			{
+				sqlCommand.Append(@" AND (
+					(Lower(Name) LIKE LOWER(:SearchInput)) 
+					OR 
+					(Lower(LoginName) LIKE LOWER(:SearchInput))
+					OR
+					(Lower(LastName) LIKE LOWER(:SearchInput)) 
+					OR
+					(Lower(FirstName) LIKE LOWER(:SearchInput)) 
+					)");
+			}
+			sqlCommand.Append(" ;  ");
 
             SqliteParameter[] arParams = new SqliteParameter[2];
 
@@ -544,22 +551,20 @@ namespace mojoPortal.Data
             sqlCommand.Append("AND DisplayInMemberList = 1 ");
             sqlCommand.Append("AND IsDeleted = 0 ");
 
-            if (searchInput.Length > 0)
-            {
-                sqlCommand.Append(" AND ");
-                sqlCommand.Append("(");
+			if (searchInput.Length > 0)
+			{
+				sqlCommand.Append(@" AND (
+					(Lower(Name) LIKE LOWER(:SearchInput)) 
+					OR 
+					(Lower(LoginName) LIKE LOWER(:SearchInput))
+					OR
+					(Lower(LastName) LIKE LOWER(:SearchInput)) 
+					OR
+					(Lower(FirstName) LIKE LOWER(:SearchInput)) 
+					)");
+			}
 
-                sqlCommand.Append(" (Name LIKE :SearchInput) ");
-                sqlCommand.Append(" OR ");
-                sqlCommand.Append(" (LoginName LIKE :SearchInput) ");
-                //sqlCommand.Append(" OR ");
-                //sqlCommand.Append(" (Email LIKE :SearchInput) ");
-
-                sqlCommand.Append(")");
-
-            }
-
-            switch (sortMode)
+			switch (sortMode)
             {
                 case 1:
                     sqlCommand.Append(" ORDER BY DateCreated DESC ");
@@ -606,22 +611,21 @@ namespace mojoPortal.Data
         {
             StringBuilder sqlCommand = new StringBuilder();
             sqlCommand.Append("SELECT Count(*) FROM mp_Users WHERE SiteID = :SiteID ");
-            if (searchInput.Length > 0)
-            {
-                sqlCommand.Append(" AND ");
-                sqlCommand.Append("(");
-
-                sqlCommand.Append(" (Name LIKE :SearchInput) ");
-                sqlCommand.Append(" OR ");
-                sqlCommand.Append(" (LoginName LIKE :SearchInput) ");
-                sqlCommand.Append(" OR ");
-                sqlCommand.Append(" (Email LIKE :SearchInput) ");
-
-                sqlCommand.Append(")");
-
-
-            }
-            sqlCommand.Append(" ;  ");
+			if (searchInput.Length > 0)
+			{
+				sqlCommand.Append(@" AND (
+					(Lower(Name) LIKE LOWER(:SearchInput)) 
+					OR 
+					(Lower(LoginName) LIKE LOWER(:SearchInput))
+					OR
+					(Lower(LastName) LIKE LOWER(:SearchInput)) 
+					OR
+					(Lower(FirstName) LIKE LOWER(:SearchInput)) 
+					OR
+					(Lower(Email) LIKE LOWER(:SearchInput)) 
+					)");
+			}
+			sqlCommand.Append(" ;  ");
 
             SqliteParameter[] arParams = new SqliteParameter[2];
 
@@ -679,22 +683,22 @@ namespace mojoPortal.Data
             sqlCommand.Append("WHERE  ");
             sqlCommand.Append("SiteID = :SiteID  ");
 
-            if (searchInput.Length > 0)
-            {
-                sqlCommand.Append(" AND ");
-                sqlCommand.Append("(");
+			if (searchInput.Length > 0)
+			{
+				sqlCommand.Append(@" AND (
+					(Lower(Name) LIKE LOWER(:SearchInput)) 
+					OR 
+					(Lower(LoginName) LIKE LOWER(:SearchInput))
+					OR
+					(Lower(LastName) LIKE LOWER(:SearchInput)) 
+					OR
+					(Lower(FirstName) LIKE LOWER(:SearchInput)) 
+					OR
+					(Lower(Email) LIKE LOWER(:SearchInput)) 
+					)");
+			}
 
-                sqlCommand.Append(" (Name LIKE :SearchInput) ");
-                sqlCommand.Append(" OR ");
-                sqlCommand.Append(" (LoginName LIKE :SearchInput) ");
-                sqlCommand.Append(" OR ");
-                sqlCommand.Append(" (Email LIKE :SearchInput) ");
-
-                sqlCommand.Append(")");
-
-            }
-
-            switch (sortMode)
+			switch (sortMode)
             {
                 case 1:
                     sqlCommand.Append(" ORDER BY DateCreated DESC ");
@@ -2233,51 +2237,76 @@ namespace mojoPortal.Data
 
         }
 
-        public static IDataReader GetSingleUser(int userId)
+
+		public static IDataReader GetSingleUser(int userId, int siteId)
+		{
+			const string sqlCommand = @"
+				SELECT
+					*
+				FROM
+					mp_Users
+				WHERE
+					UserID = :UserID
+				AND
+					SiteID = :SiteID;";
+
+			var arParams = new List<SqliteParameter>
+			{
+				new SqliteParameter(":UserID", DbType.Int32)
+				{
+					Direction = ParameterDirection.Input,
+					Value = userId
+				},
+				new SqliteParameter(":SiteID", DbType.Int32)
+				{
+					Direction = ParameterDirection.Input,
+					Value = siteId
+				}
+			};
+
+			return SqliteHelper.ExecuteReader(
+				GetConnectionString(),
+				sqlCommand,
+				arParams.ToArray()
+			);
+		}
+
+
+		public static IDataReader GetSingleUser(Guid userGuid, int siteId)
         {
-            StringBuilder sqlCommand = new StringBuilder();
-            sqlCommand.Append("SELECT * ");
+			const string sqlCommand = @"
+				SELECT
+					*
+				FROM
+					mp_Users
+				WHERE
+					UserGuid = :UserGuid
+				AND
+					SiteID = :SiteID;";
 
-            sqlCommand.Append("FROM	mp_Users ");
+            var arParams = new List<SqliteParameter>
+            {
+	            new SqliteParameter(":UserGuid", DbType.String, 36)
+	            {
+		            Direction = ParameterDirection.Input,
+		            Value = userGuid.ToString()
+	            },
+				new SqliteParameter(":SiteID", DbType.Int32)
+	            {
+		            Direction = ParameterDirection.Input,
+		            Value = siteId
+	            }
+            };
 
-            sqlCommand.Append("WHERE UserID = :UserID;");
-
-            SqliteParameter[] arParams = new SqliteParameter[1];
-
-            arParams[0] = new SqliteParameter(":UserID", DbType.Int32);
-            arParams[0].Direction = ParameterDirection.Input;
-            arParams[0].Value = userId;
-
-            return SqliteHelper.ExecuteReader(
+	        return SqliteHelper.ExecuteReader(
                 GetConnectionString(),
-                sqlCommand.ToString(),
-                arParams);
-
+                sqlCommand,
+                arParams.ToArray()
+			);
         }
 
-        public static IDataReader GetSingleUser(Guid userGuid)
-        {
-            StringBuilder sqlCommand = new StringBuilder();
-            sqlCommand.Append("SELECT * ");
 
-            sqlCommand.Append("FROM	mp_Users ");
-
-            sqlCommand.Append("WHERE UserGuid = :UserGuid ;  ");
-
-            SqliteParameter[] arParams = new SqliteParameter[1];
-
-            arParams[0] = new SqliteParameter(":UserGuid", DbType.String, 36);
-            arParams[0].Direction = ParameterDirection.Input;
-            arParams[0].Value = userGuid.ToString();
-
-            return SqliteHelper.ExecuteReader(
-                GetConnectionString(),
-                sqlCommand.ToString(),
-                arParams);
-
-        }
-
-        public static Guid GetUserGuidFromOpenId(
+	    public static Guid GetUserGuidFromOpenId(
             int siteId,
             string openIduri)
         {

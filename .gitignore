@@ -252,6 +252,7 @@ Web/Data/Helpfiles/*-SharedFiles*
 Web/Data/Helpfiles/*FormWizard*
 Web/Data/Helpfiles/*-SiteMembership*
 Web/Data/Helpfiles/*-WebInvoice*
+Web/Data/Helpfiles/*-sflexi*
 
 Web/Data/MessageTemplates/*-WebInvoice*
 Web/Data/MessageTemplates/*-EventCalendarPro*
@@ -417,4 +418,15 @@ Web/Setup/ProviderConfig/worldpayresponsehandlers/webstoreworldpayresponsehandle
 Web/Data/sqlitedb/mojo\.db\.config-journal
 
 Web/Setup/RouteRegistrars/SuperFlexiRoutes\.config
-/Web
+
+*.bak
+
+Web/BetterImageGallery/
+
+Web/Views/BetterImageGallery/
+
+Web/Setup/applications/BetterImageGallery/
+
+Web/App_GlobalResources/BetterImageGalleryResources\.resx
+
+Web/Data/sqlitedb/mojo\.db\.config

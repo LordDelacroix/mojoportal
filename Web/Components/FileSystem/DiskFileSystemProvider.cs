@@ -18,7 +18,7 @@ using mojoPortal.Business;
 using mojoPortal.Business.WebHelpers;
 using mojoPortal.Web;
 using mojoPortal.Web.Framework;
-
+using log4net;
 
 namespace mojoPortal.FileSystem
 {
@@ -27,11 +27,11 @@ namespace mojoPortal.FileSystem
         private SiteSettings siteSettings = null;
         private SiteUser currentUser = null;
         private const long bytesPerMegabyte = 1048576;
-
+		private ILog log = LogManager.GetLogger(typeof(DiskFileSystemProvider));
         
         public override IFileSystem GetFileSystem()
         {
-            siteSettings = CacheHelper.GetCurrentSiteSettings();
+			siteSettings = CacheHelper.GetCurrentSiteSettings();
             IFileSystemPermission p = GetFileSystemPermission();
             if (p == null) { return null; }
             if(string.IsNullOrEmpty(p.VirtualRoot)) { return null; }
@@ -39,7 +39,17 @@ namespace mojoPortal.FileSystem
             return DiskFileSystem.GetFileSystem(p);
         }
 
-        public override IFileSystem GetFileSystem(IFileSystemPermission permission)
+		public override IFileSystem GetFileSystem(int siteId)
+		{
+			siteSettings = CacheHelper.GetCurrentSiteSettings();
+			if (siteSettings == null)
+			{
+				siteSettings = new SiteSettings(siteId);
+			}
+			return GetFileSystem();
+		}
+
+		public override IFileSystem GetFileSystem(IFileSystemPermission permission)
         {
             siteSettings = CacheHelper.GetCurrentSiteSettings();
             //IFileSystemPermission p = GetFileSystemPermission();
@@ -55,12 +65,14 @@ namespace mojoPortal.FileSystem
             return new FileSystemPermission()
             {
                 UserHasUploadPermission = UserHasUploadPermission(),
+				UserHasBrowsePermission = UserHasBrowsePermission(),
                 VirtualRoot = GetVirtualPath(),
                 Quota = GetQuota(),
                 MaxSizePerFile = GetMaxSizePerFile(),
                 MaxFiles = GetMaxFiles(),
                 MaxFolders = GetMaxFolders(),
-                AllowedExtensions = GetAllowedExtensions()
+                AllowedExtensions = GetAllowedExtensions(),
+				UserFolder = GetUserFolder()
             };
         }
 
@@ -71,6 +83,7 @@ namespace mojoPortal.FileSystem
            
             if (siteSettings == null)
             {
+				log.Error("Cannot load file system because Site Settings could not be loaded.");
                 throw new ArgumentNullException("could not load SiteSettings");
             }
 
@@ -103,32 +116,63 @@ namespace mojoPortal.FileSystem
                     }
                 }
             }
+            //else if (WebUser.IsInRoles(siteSettings.GeneralBrowseAndUploadRoles) || WebUser.IsInRoles(siteSettings.GeneralBrowseRoles))
             else if (WebUser.IsInRoles(siteSettings.GeneralBrowseAndUploadRoles))
-            {
+			{
                 virtualPath = "~/Data/Sites/" + siteId.ToInvariantString() + "/media/";
-
             }
-            else if (WebUser.IsInRoles(siteSettings.UserFilesBrowseAndUploadRoles))
-            {
-                currentUser = SiteUtils.GetCurrentSiteUser();
-                if (currentUser == null)
-                {
-                    throw new ArgumentNullException("could not load current SiteUser");
-                }
+			else if (WebUser.IsInRoles(siteSettings.UserFilesBrowseAndUploadRoles))
+			{
 
-                virtualPath = "~/Data/Sites/" + siteId.ToInvariantString() + "/userfiles/" + currentUser.UserId.ToInvariantString() + "/";
+				currentUser = SiteUtils.GetCurrentSiteUser();
+				if (currentUser == null)
+				{
+					log.Error("Cannot load file system because Site User could not be loaded.");
+					throw new ArgumentNullException("could not load current SiteUser");
+				}
 
-            }
+				virtualPath = "~/Data/Sites/" + siteId.ToInvariantString() + "/userfiles/" + currentUser.UserId.ToInvariantString() + "/";
+
+			}
 
 
-            return virtualPath;
+			return virtualPath;
 
         }
+		private string GetUserFolder()
+		{
+			if (WebUser.IsInRoles(siteSettings.UserFilesBrowseAndUploadRoles))
+			{
+				if (siteSettings == null)
+				{
+					log.Error("Cannot load file system because Site Settings could not be loaded.");
+					throw new ArgumentNullException("could not load SiteSettings");
+				}
 
-        private bool UserHasUploadPermission()
+				int siteId = siteSettings.SiteId;
+
+				if (WebConfigSettings.UseRelatedSiteMode && WebConfigSettings.UseSameContentFolderForRelatedSiteMode)
+				{
+					siteId = WebConfigSettings.RelatedSiteID;
+				}
+
+				currentUser = SiteUtils.GetCurrentSiteUser();
+				if (currentUser == null)
+				{
+					log.Error("Cannot load file system because Site User could not be loaded.");
+					throw new ArgumentNullException("could not load current SiteUser");
+				}
+
+				return "~/Data/Sites/" + siteId.ToInvariantString() + "/userfiles/" + currentUser.UserId.ToInvariantString() + "/";
+			}
+			return string.Empty;
+		}
+
+		private bool UserHasUploadPermission()
         {
             bool result = false;
-            
+			if (siteSettings == null) return false;
+
             if ((WebUser.IsAdminOrContentAdmin)||SiteUtils.UserIsSiteEditor())
             {
                 result = true;
@@ -145,6 +189,17 @@ namespace mojoPortal.FileSystem
             return result;
 
         }
+
+		private bool UserHasBrowsePermission()
+		{
+			if (siteSettings == null) return false;
+			if (WebUser.IsAdminOrContentAdmin || SiteUtils.UserIsSiteEditor() || WebUser.IsInRoles(siteSettings.GeneralBrowseRoles))
+			{
+				return true;
+			}
+
+			return false;
+		}
 
         private int GetMaxFiles()
         {

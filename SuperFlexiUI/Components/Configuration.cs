@@ -1,7 +1,4 @@
 ﻿// Author:				    i7MEDIA (joe davis)
-// Created:			        2014-12-22
-// Last Modified:		    2017-09-16
-// 
 // You must not remove this notice, or any other, from this software.
 
 using System;
@@ -26,6 +23,7 @@ namespace SuperFlexiUI
         private static readonly ILog log = LogManager.GetLogger(typeof(ModuleConfiguration));
         private Module module;
         private Hashtable settings;
+		//private SiteSettings siteSettings;
         private int siteId = -1;
 
 		FileSystemProvider fsProvider;
@@ -34,38 +32,58 @@ namespace SuperFlexiUI
 
 
 #region contstructors
-public ModuleConfiguration()
+		public ModuleConfiguration()
         { }
 
-        public ModuleConfiguration(Module module)
+        public ModuleConfiguration(Module module, bool reloadDefinitionFromDisk = false)
         {
-			fsProvider = FileSystemManager.Providers[WebConfigSettings.FileSystemProvider];
-			if (fsProvider == null)
-			{
-				log.Error("File System Provider Could Not Be Loaded.");
-				return;
-			}
-			fileSystem = fsProvider.GetFileSystem();
-			if (fileSystem == null)
-			{
-				log.Error("File System Could Not Be Loaded.");
-				return;
-			}
-
 			if (module != null)
             {
+				//log.Debug($"module {module.ModuleId} has siteid={module.SiteId}");
+				if (module.SiteId < 1)
+				{
+					Module m2 = new Module(module.ModuleId);
+					if (m2 != null)
+					{
+						module = m2;
+					}
+				}
+
                 this.module = module;
                 this.siteId = module.SiteId;
                 featureGuid = module.FeatureGuid;
                 settings = ModuleSettings.GetModuleSettings(module.ModuleId);
 
-                if (siteId < 1)
-                {
-                    siteId = CacheHelper.GetCurrentSiteSettings().SiteId;
-                }
-                LoadSettings(settings);
+				//if (siteId < 1)
+				//{
+				//	if (siteSettings == null)
+				//	{
+				//		siteSettings = CacheHelper.GetCurrentSiteSettings();
+				//	}
+				//	siteId = siteSettings.SiteId;
+				//}
+
+				fsProvider = FileSystemManager.Providers[WebConfigSettings.FileSystemProvider];
+				if (fsProvider == null)
+				{
+					log.Error("File System Provider Could Not Be Loaded.");
+					return;
+				}
+				fileSystem = fsProvider.GetFileSystem(siteId);
+				if (fileSystem == null)
+				{
+					log.Error("File System Could Not Be Loaded.");
+					return;
+				}
+
+                LoadSettings(settings, reloadDefinitionFromDisk);
             }
         }
+
+		//public ModuleConfiguration(Module module, int siteId, bool reloadDefinitionFromDisk = false)
+		//{
+		//	siteSettings = new SiteSettings(siteId);
+		//}
         #endregion
         #region public methods
         /// <summary>
@@ -115,7 +133,7 @@ public ModuleConfiguration()
         }
         #endregion
         #region private methods
-        private void LoadSettings(Hashtable settings)
+        private void LoadSettings(Hashtable settings, bool reloadDefinitionFromDisk = false)
         {
             if (settings == null) { throw new ArgumentException("must pass in a hashtable of settings"); }
 
@@ -193,7 +211,7 @@ public ModuleConfiguration()
 			if (settings.Contains("MarkupDefinitionContent"))
             {
                 markupDefinitionContent = settings["MarkupDefinitionContent"].ToString();
-                if (string.IsNullOrWhiteSpace(markupDefinitionContent) || AlwaysLoadMarkupDefinitionFromDisk)
+                if (string.IsNullOrWhiteSpace(markupDefinitionContent) || AlwaysLoadMarkupDefinitionFromDisk || reloadDefinitionFromDisk)
                 {
                     CopyMarkupDefinitionToDatabase();
                 }
@@ -330,9 +348,11 @@ public ModuleConfiguration()
                 useFooter = XmlUtils.ParseBoolFromAttribute(attrCollection, "useFooter", useFooter);
                 allowImport = XmlUtils.ParseBoolFromAttribute(attrCollection, "allowImport", allowImport);
                 allowExport = XmlUtils.ParseBoolFromAttribute(attrCollection, "allowExport", allowExport);
-                //renderModuleLinksWithModuleTitle = XmlUtils.ParseBoolFromAttribute(attrCollection, "renderModuleLinksWithModuleTitle", renderModuleLinksWithModuleTitle);
+				if (attrCollection["itemViewRolesFieldName"] != null) ItemViewRolesFieldName = attrCollection["itemViewRolesFieldName"].Value;
+				if (attrCollection["itemEditRolesFieldName"] != null) ItemEditRolesFieldName = attrCollection["itemEditRolesFieldName"].Value;
+				//renderModuleLinksWithModuleTitle = XmlUtils.ParseBoolFromAttribute(attrCollection, "renderModuleLinksWithModuleTitle", renderModuleLinksWithModuleTitle);
 
-                if (attrCollection["editPageClass"] != null) editPageCssClass += " " + attrCollection["editPageClass"].Value;
+				if (attrCollection["editPageClass"] != null) editPageCssClass += " " + attrCollection["editPageClass"].Value;
                 if (attrCollection["editPageTitle"] != null) editPageTitle = attrCollection["editPageTitle"].Value;
                 if (attrCollection["editPageUpdateButtonText"] != null) editPageUpdateButtonText = attrCollection["editPageUpdateButtonText"].Value;
                 if (attrCollection["editPageSaveButtonText"] != null) editPageSaveButtonText = attrCollection["editPageSaveButtonText"].Value;
@@ -342,6 +362,7 @@ public ModuleConfiguration()
                 if (attrCollection["importPageTitle"] != null) importPageTitle = attrCollection["importPageTitle"].Value;
                 if (attrCollection["exportPageTitle"] != null) exportPageTitle = attrCollection["exportPageTitle"].Value;
                 if (attrCollection["importPageCancelLinkText"] != null) importPageCancelLinkText = attrCollection["importPageCancelLinkText"].Value;
+				log.Debug($"current siteid={siteId.ToString()}. invariant siteid={siteId.ToInvariantString()}");
                 if (attrCollection["fieldDefinitionSrc"] != null) fieldDefinitionSrc = attrCollection["fieldDefinitionSrc"].Value.Replace("$_SitePath_$", "/Data/Sites/" + siteId.ToInvariantString());
                 if (attrCollection["fieldDefinitionGuid"] != null) fieldDefinitionGuid = Guid.Parse(attrCollection["fieldDefinitionGuid"].Value);
                 if (attrCollection["jsonRenderLocation"] != null) jsonRenderLocation = attrCollection["jsonRenderLocation"].Value;
@@ -537,10 +558,19 @@ public ModuleConfiguration()
         public string JsonRenderLocation { get { return jsonRenderLocation; } }
 
 
-        public bool RenderJSONOfData { get { return !String.IsNullOrWhiteSpace(jsonRenderLocation); } }
+		public bool RenderJSONOfData
+		{
+			get
+			{
+				if (processItems && !String.IsNullOrWhiteSpace(jsonRenderLocation))
+					return true;
+
+				return false;
+			}
+		}
 
 
-        private bool jsonLabelObjects = false;
+		private bool jsonLabelObjects = false;
         public bool JsonLabelObjects { get { return jsonLabelObjects; } }
         //private bool renderModuleLinksWithModuleTitle = true;
         //public bool RenderModuleLinksWithModuleTitle { get { return renderModuleLinksWithModuleTitle; } }
@@ -747,8 +777,11 @@ public ModuleConfiguration()
 		/// used when populating data via api
 		/// </summary>
 		public bool ProcessItems { get { return processItems; } }
-        #endregion
-    }
+
+		public string ItemViewRolesFieldName { get; set; } = string.Empty;
+		public string ItemEditRolesFieldName { get; set; } = string.Empty;
+		#endregion
+	}
 
     public class MarkupScript
     {

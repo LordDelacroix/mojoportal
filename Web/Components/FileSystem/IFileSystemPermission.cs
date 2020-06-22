@@ -18,10 +18,11 @@ namespace mojoPortal.FileSystem
     public interface IFileSystemPermission
     {
         bool UserHasUploadPermission { get; } 
-        /// <summary>
-        /// The root folder allowed 
-        /// </summary>
-        string VirtualRoot { get; }
+        bool UserHasBrowsePermission { get; }
+		/// <summary>
+		/// The root folder allowed 
+		/// </summary>
+		string VirtualRoot { get; }
 
 
         /// <summary>
@@ -74,5 +75,7 @@ namespace mojoPortal.FileSystem
         /// The max number of files allowed for the user.
         /// </value>
         int MaxFiles { get; }
+
+		string UserFolder { get; }
     }
 }

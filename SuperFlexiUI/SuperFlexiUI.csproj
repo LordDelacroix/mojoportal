@@ -109,10 +109,10 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Newtonsoft.Json.8.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.8.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -132,7 +132,7 @@
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
@@ -141,19 +141,19 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\mojo\repo-tests\mojoportal-master\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
@@ -165,14 +165,13 @@
     <Content Include="SuperFlexi\Controls\Wysiwyg.ascx" />
     <Content Include="SuperFlexi\Controls\MarkupDefinitionSetting.ascx" />
     <Content Include="SuperFlexi\Controls\Widget.ascx" />
-    <Content Include="SuperFlexi\css\urlbrowserinput.css" />
+    <Content Include="SuperFlexi\css\advanced-file-picker.css" />
     <Content Include="SuperFlexi\Edit2.aspx" />
     <Content Include="SuperFlexi\Edit.aspx" />
     <Content Include="SuperFlexi\EditHeader.aspx" />
     <Content Include="SuperFlexi\Export.aspx" />
-    <Content Include="SuperFlexi\html\urlbrowsermodal.html" />
     <Content Include="SuperFlexi\Import.aspx" />
-    <Content Include="SuperFlexi\js\urlbrowserinput.js" />
+    <Content Include="SuperFlexi\js\advanced-file-picker.js" />
     <Content Include="SuperFlexi\Module.ascx" />
     <Content Include="Setup\applications\SuperFlexi\SchemaInstallScripts\mssql\0.0.0.1.config" />
     <Content Include="Setup\applications\SuperFlexi\SchemaUpgradeScripts\mssql\0.0.0.2.config" />
@@ -208,6 +207,12 @@
     <Content Include="Setup\applications\SuperFlexi\SchemaInstallScripts\sqlite\0.0.1.7.config" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <Content Include="Setup\applications\SuperFlexi\SchemaInstallScripts\mysql\0.0.1.3.config" />
+    <Content Include="Setup\applications\SuperFlexi\SchemaUpgradeScripts\mssql\0.0.1.8.config" />
+    <Content Include="Views\SuperFlexi\_AdvancedFilePicker.cshtml" />
+    <Content Include="Views\SuperFlexi\_AdvancedFilePickerModal.cshtml" />
+    <Content Include="Setup\applications\SuperFlexi\SchemaUpgradeScripts\mssql\0.0.1.9.config" />
+    <Content Include="Setup\applications\SuperFlexi\SchemaUpgradeScripts\mssql\0.0.2.0.config" />
+    <Content Include="Setup\applications\SuperFlexi\SchemaUpgradeScripts\pgsql\0.0.2.0.config" />
     <None Include="Web.config">
       <SubType>Designer</SubType>
     </None>
@@ -357,6 +362,10 @@
       <Name>mojoPortal.Business</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\mojoPortal.Core\mojoPortal.Core.csproj">
+      <Project>{fea72210-0415-4133-bdf9-8877683ba832}</Project>
+      <Name>mojoPortal.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\mojoPortal.Web.Controls\mojoPortal.Web.Controls.csproj">
       <Project>{a2dcd1e2-a5c3-4e37-a5f2-093659bc1c38}</Project>
       <Name>mojoPortal.Web.Controls</Name>
@@ -375,6 +384,7 @@
     <ProjectReference Include="..\Web\mojoPortal.Web.csproj">
       <Project>{8e511d65-4779-4689-82d4-811d3fe6866e}</Project>
       <Name>mojoPortal.Web</Name>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\SuperFlexiBusiness\SuperFlexiBusiness.csproj">
       <Project>{ffbe2ed5-a3ae-46ba-815c-6c2e643b0aaa}</Project>
@@ -410,6 +420,7 @@ xcopy /s /y "$(ProjectDir)SuperFlexi\js\*" "$(SolutionDir)Web\SuperFlexi\js\"
 xcopy /s /y "$(ProjectDir)SuperFlexi\html\*" "$(SolutionDir)Web\SuperFlexi\html\"
 xcopy /s /y "$(ProjectDir)App_GlobalResources\*.resx" "$(SolutionDir)Web\App_GlobalResources\"
 xcopy /s /y "$(ProjectDir)Setup\*" "$(SolutionDir)Web\Setup\"
+xcopy /s /y "$(ProjectDir)Data\HelpFiles\*.config" "$(SolutionDir)Web\Data\HelpFiles\"
 xcopy /s /y "$(ProjectDir)Views\*" "$(SolutionDir)Web\Views\"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -419,4 +430,8 @@ xcopy /s /y "$(ProjectDir)Views\*" "$(SolutionDir)Web\Views\"</PostBuildEvent>
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="SpicNSpan" AfterTargets="Clean">
+    <RemoveDir Directories="$(TargetDir)" />
+    <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
+  </Target>
 </Project>

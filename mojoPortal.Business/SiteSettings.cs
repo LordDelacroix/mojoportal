@@ -8,9 +8,10 @@
 // Created:				    2004-07-25
 // 
 // 2007-07-17   Alexander Yushchenko added site folders properties (SiteDataFolder, etc)
-// Last Modified:		    2014-01-10
+// Last Modified:		    2019-01-07
 
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Globalization;
@@ -1361,7 +1362,18 @@ namespace mojoPortal.Business
             set { SetExpandoProperty("GeneralBrowseAndUploadRoles", value); }
         }
 
-        public string UserFilesBrowseAndUploadRoles
+		public string GeneralBrowseRoles
+		{
+			get
+			{
+				string result = GetExpandoProperty("GeneralBrowseRoles");
+				if (result != null) { return result; }
+				return string.Empty;
+			}
+			set { SetExpandoProperty("GeneralBrowseRoles", value); }
+		}
+
+		public string UserFilesBrowseAndUploadRoles
         {
             get
             {
@@ -1438,7 +1450,18 @@ namespace mojoPortal.Business
             set { SetExpandoProperty("DefaultRootPageCreateChildPageRoles", value); }
         }
 
-        public Guid SkinVersion
+		public string TagManagementRoles
+		{
+			get
+			{
+				string result = GetExpandoProperty("TagManagementRoles");
+				if (result != null) { return result; }
+				return "Content Administrators;";
+			}
+			set { SetExpandoProperty("TagManagementRoles", value); }
+		}
+
+		public Guid SkinVersion
         {
             get
             {
@@ -2464,6 +2487,19 @@ namespace mojoPortal.Business
 			return DBSiteSettings.GetHostList(siteId);
 		}
 
+		//public static List<KeyValuePair<string, Guid>> GetHostList()
+		//{
+		//	List<KeyValuePair<string, Guid>> hostList = new List<KeyValuePair<string, Guid>>();
+		//	using (IDataReader reader = DBSiteSettings.GetHostList())
+		//	{
+		//		while (reader.Read())
+		//		{
+		//			hostList.Add(new KeyValuePair<reader["HostName"].ToString(), Guid.Parse(reader["SiteGuid"].ToString()));
+		//		}
+
+		//	}
+		//}
+
 		public static void AddHost(Guid siteGuid, int siteId, string hostName) 
 		{
 			DBSiteSettings.AddHost(siteGuid, siteId, hostName);
@@ -2687,6 +2723,14 @@ namespace mojoPortal.Business
 		public static bool HostNameExists(string hostName)
 		{
 			return DBSiteSettings.HostNameExists(hostName);
+		}
+
+		/// <summary>
+		/// Updates the Skin Version for all sites. This is used when Setup has upgraded the core to force browsers to download skin files after upgrades
+		/// </summary>
+		public static void UpdateSkinVersionGuidForAllSites()
+		{
+			DBSiteSettings.UpdateSkinVersionGuidForAllSites();
 		}
 
 		#endregion

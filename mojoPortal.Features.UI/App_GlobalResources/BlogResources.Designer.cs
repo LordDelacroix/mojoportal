@@ -1492,6 +1492,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Default Post URL Prefix.
+        /// </summary>
+        internal static string DefaultUrlPrefix {
+            get {
+                return ResourceManager.GetString("DefaultUrlPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete All History.
         /// </summary>
         internal static string DeleteAllHistoryButton {
@@ -1668,6 +1677,15 @@ namespace Resources {
         internal static string ExpiredPostsFormat {
             get {
                 return ResourceManager.GetString("ExpiredPostsFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extra CSS Class.
+        /// </summary>
+        internal static string ExtraCssClassSetting {
+            get {
+                return ResourceManager.GetString("ExtraCssClassSetting", resourceCulture);
             }
         }
         

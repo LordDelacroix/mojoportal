@@ -258,11 +258,11 @@ namespace mojoPortal.Web.BlogUI
 
 				if (WebConfigSettings.AppendDateToBlogUrls)
 				{
-					friendlyUrl = SiteUtils.SuggestFriendlyUrl(txtTitle.Text + "-" + DateTime.UtcNow.AddHours(timeOffset).ToString("yyyy-MM-dd"), siteSettings);
+					friendlyUrl = SiteUtils.SuggestFriendlyUrl($"{config.DefaultUrlPrefix}{txtTitle.Text}-{DateTime.UtcNow.AddHours(timeOffset).ToString("yyyy-MM-dd")}", siteSettings);
 				}
 				else
 				{
-					friendlyUrl = SiteUtils.SuggestFriendlyUrl(txtTitle.Text, siteSettings);
+					friendlyUrl = SiteUtils.SuggestFriendlyUrl($"{config.DefaultUrlPrefix}{txtTitle.Text}", siteSettings);
 				}
 
 				txtItemUrl.Text = "~/" + friendlyUrl;
@@ -930,7 +930,7 @@ namespace mojoPortal.Web.BlogUI
 
 		private string SuggestUrl()
 		{
-			string pageName = txtTitle.Text;
+			string pageName = config.DefaultUrlPrefix + txtTitle.Text;
 
 			if (WebConfigSettings.AppendDateToBlogUrls)
 			{
@@ -1073,7 +1073,7 @@ namespace mojoPortal.Web.BlogUI
 
 			if (btnDeleteMeta != null)
 			{
-				btnDelete.Attributes.Add("OnClick", $"return confirm('{BlogResources.ContentMetaDeleteWarning}');");
+				btnDeleteMeta.Attributes.Add("OnClick", $"return confirm('{BlogResources.ContentMetaDeleteWarning}');");
 			}
 
 			upMeta.Update();
@@ -1444,8 +1444,7 @@ namespace mojoPortal.Web.BlogUI
 			Button btnDelete = (Button)grid.Rows[e.NewEditIndex].Cells[1].FindControl("btnDeleteMetaLink");
 			if (btnDelete != null)
 			{
-				btnDelete.Attributes.Add("OnClick", "return confirm('"
-					+ BlogResources.ContentMetaLinkDeleteWarning + "');");
+				btnDelete.Attributes.Add("OnClick", $"return confirm(\"{BlogResources.ContentMetaLinkDeleteWarning}\");");
 
 				if (guid == Guid.Empty) { btnDelete.Visible = false; }
 			}
@@ -1560,8 +1559,7 @@ namespace mojoPortal.Web.BlogUI
 			Button btnDelete = (Button)e.Row.Cells[0].FindControl("btnDelete");
 			if (btnDelete != null)
 			{
-				btnDelete.Attributes.Add("OnClick", "return confirm('"
-					+ BlogResources.DeleteHistoryItemWarning + "');");
+				btnDelete.Attributes.Add("OnClick", $"return confirm(\"{BlogResources.DeleteHistoryItemWarning}\");");
 			}
 
 		}
@@ -1652,6 +1650,11 @@ namespace mojoPortal.Web.BlogUI
 		{
 			if (blog != null)
 			{
+				if (blog.ItemId == config.FeaturedPostId)
+				{
+					Module module = GetModule(moduleId, Blog.FeatureGuid);
+					ModuleSettings.UpdateModuleSetting(module.ModuleGuid, moduleId, "FeaturedPostId", "0");
+				}
 				blog.ContentChanged += new ContentChangedEventHandler(blog_ContentChanged);
 				blog.Delete();
 				FriendlyUrl.DeleteByPageGuid(blog.BlogGuid);
@@ -2056,24 +2059,25 @@ namespace mojoPortal.Web.BlogUI
 			if (!Page.ClientScript.IsClientScriptBlockRegistered("friendlyurlsuggest"))
 			{
 				Page.ClientScript.RegisterClientScriptBlock(GetType(), "friendlyurlsuggest", "<script src=\""
-					+ ResolveUrl(WebConfigSettings.FriendlyUrlSuggestScript) + "\" type=\"text/javascript\"></script>");
+					+ ResolveUrl($"{WebConfigSettings.FriendlyUrlSuggestScript}?v={siteSettings.SkinVersion}") + "\" type=\"text/javascript\"></script>");
 			}
 
 			string focusScript = string.Empty;
 
 			if (itemId == -1)
 			{
-				focusScript = "document.getElementById('" + txtTitle.ClientID + "').focus();";
+				focusScript = $"document.getElementById('{txtTitle.ClientID}').focus();";
 			}
 
-			string hookupInputScript = "<script type=\"text/javascript\">"
-				+ "new UrlHelper( "
-				+ "document.getElementById('" + txtTitle.ClientID + "'),  "
-				+ "document.getElementById('" + txtItemUrl.ClientID + "'), "
-				+ "document.getElementById('" + hdnTitle.ClientID + "'), "
-				+ "document.getElementById('" + spnUrlWarning.ClientID + "'), "
-				+ "\"" + SiteRoot + "/Blog/BlogUrlSuggestService.ashx" + "\""
-				+ "); " + focusScript + "</script>";
+			string hookupInputScript = $@"<script type=""text/javascript"">
+				new UrlHelper(
+						document.getElementById('{txtTitle.ClientID}'),
+						document.getElementById('{txtItemUrl.ClientID}'),
+						document.getElementById('{hdnTitle.ClientID}'),
+						document.getElementById('{spnUrlWarning.ClientID}'), 
+						""{SiteRoot}/Blog/BlogUrlSuggestService.ashx"",
+						""{config.DefaultUrlPrefix}""
+					); {focusScript}</script>";
 
 			if (!Page.ClientScript.IsStartupScriptRegistered(UniqueID + "urlscript"))
 			{

@@ -1,6 +1,6 @@
-﻿//  Author:                     
-//  Created:                    2013-04-01
-//	Last Modified:              2013-07-10
+﻿//  Author:
+//  Created:       2013-04-01
+//	Last Modified: 2018-07-20
 // 
 // The use and distribution terms for this software are covered by the 
 // Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
@@ -19,200 +19,203 @@ using mojoPortal.Web.SharedFilesUI;
 using mojoPortal.Web.UI;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using System.Web.Script.Serialization;
 
 namespace mojoPortal.Features.UI.SharedFiles
 {
-    /// <summary>
-    /// Handles file uploads for the Shared Files feature, called from jQueryFileUpload.cs
-    /// </summary>
-    public class upload : BaseContentUploadHandler, IHttpHandler
-    {
-        private string virtualSourcePath = string.Empty;
-        private string virtualHistoryPath = string.Empty;
-        private SharedFilesConfiguration config = new SharedFilesConfiguration();
-        private int itemId = -1;
-        private int currentFolderId = -1;
-        private Module module = null;
+	/// <summary>
+	/// Handles file uploads for the Shared Files feature, called from jQueryFileUpload.cs
+	/// </summary>
+	public class upload : BaseContentUploadHandler, IHttpHandler
+	{
+		private string virtualSourcePath = string.Empty;
+		private string virtualHistoryPath = string.Empty;
+		private SharedFilesConfiguration config = new SharedFilesConfiguration();
+		private int itemId = -1;
+		private int currentFolderId = -1;
+		private Module module = null;
 
-        public void ProcessRequest(HttpContext context)
-        {
-            base.Initialize(context);
+		public void ProcessRequest(HttpContext context)
+		{
+			Initialize(context);
 
-            if (!UserCanEditModule(ModuleId, SharedFile.FeatureGuid))
-            {
-                log.Info("User has no edit permission so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+			if (!UserCanEditModule(ModuleId, SharedFile.FeatureGuid))
+			{
+				log.Info("User has no edit permission so returning 404");
+				Response.StatusCode = 404;
 
-            if (CurrentSite == null)
-            {
-                log.Info("CurrentSite is null so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+				return;
+			}
 
-            if (CurrentUser == null)
-            {
-                log.Info("CurrentUser is null so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+			if (CurrentSite == null)
+			{
+				log.Info("CurrentSite is null so returning 404");
+				Response.StatusCode = 404;
 
-            if (FileSystem == null)
-            {
-                log.Info("FileSystem is null so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+				return;
+			}
 
-            if (Request.Files.Count == 0)
-            {
-                log.Info("Posted File Count is zero so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+			if (CurrentUser == null)
+			{
+				log.Info("CurrentUser is null so returning 404");
+				Response.StatusCode = 404;
 
-            if (Request.Files.Count > SharedFilesConfiguration.MaxFilesToUploadAtOnce)
-            {
-                log.Info("Posted File Count is greater than allowed amount so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+				return;
+			}
 
-            module = GetModule(ModuleId, SharedFile.FeatureGuid);
+			if (FileSystem == null)
+			{
+				log.Info("FileSystem is null so returning 404");
+				Response.StatusCode = 404;
 
-            if (module == null)
-            {
-                log.Info("Module is null so returning 404");
-                Response.StatusCode = 404;
-                return;
-            }
+				return;
+			}
 
-            itemId = WebUtils.ParseInt32FromQueryString("ItemID", itemId);
-            currentFolderId = WebUtils.ParseInt32FromQueryString("frmData", currentFolderId);
-            
+			if (Request.Files.Count == 0)
+			{
+				log.Info("Posted File Count is zero so returning 404");
+				Response.StatusCode = 404;
 
-            virtualSourcePath = "~/Data/Sites/" + CurrentSite.SiteId.ToInvariantString() + "/SharedFiles/";
-            virtualHistoryPath = "~/Data/Sites/" + CurrentSite.SiteId.ToInvariantString() + "/SharedFiles/History/";
+				return;
+			}
 
-            Hashtable moduleSettings = ModuleSettings.GetModuleSettings(ModuleId);
-            config = new SharedFilesConfiguration(moduleSettings);
+			if (Request.Files.Count > SharedFilesConfiguration.MaxFilesToUploadAtOnce)
+			{
+				log.Info("Posted File Count is greater than allowed amount so returning 404");
+				Response.StatusCode = 404;
 
+				return;
+			}
 
-            context.Response.ContentType = "text/plain";//"application/json";
-            var r = new System.Collections.Generic.List<UploadFilesResult>();
-            JavaScriptSerializer js = new JavaScriptSerializer();
+			module = GetModule(ModuleId, SharedFile.FeatureGuid);
 
-            
-            if (!FileSystem.FolderExists(virtualSourcePath))
-            {
-                FileSystem.CreateFolder(virtualSourcePath);
-            }
+			if (module == null)
+			{
+				log.Info("Module is null so returning 404");
+				Response.StatusCode = 404;
 
-            for (int f = 0; f < Request.Files.Count; f++)
-            {
-                HttpPostedFile file = Request.Files[f];
+				return;
+			}
 
-                string fileName = Path.GetFileName(file.FileName);
+			itemId = WebUtils.ParseInt32FromQueryString("ItemID", itemId);
+			currentFolderId = WebUtils.ParseInt32FromQueryString("frmData", currentFolderId);
 
-                SharedFile sharedFile;
-                if ((itemId > -1) && (Request.Files.Count == 1))
-                {
-                    // updating an existing file
-                    sharedFile = new SharedFile(ModuleId, itemId);
+			virtualSourcePath = "~/Data/Sites/" + CurrentSite.SiteId.ToInvariantString() + "/SharedFiles/";
+			virtualHistoryPath = "~/Data/Sites/" + CurrentSite.SiteId.ToInvariantString() + "/SharedFiles/History/";
 
-                    if (config.EnableVersioning)
-                    {
-                        bool historyCreated = SharedFilesHelper.CreateHistory(sharedFile, FileSystem, virtualSourcePath, virtualHistoryPath);
-                        if (historyCreated)
-                        {
-                            sharedFile.ServerFileName = System.Guid.NewGuid().ToString() + ".config";
-                        }
+			Hashtable moduleSettings = ModuleSettings.GetModuleSettings(ModuleId);
+			config = new SharedFilesConfiguration(moduleSettings);
 
-                    }
-                }
-                else
-                {   // new file
-                    sharedFile = new SharedFile();
-                }
-                sharedFile.ModuleId = ModuleId;
-                sharedFile.ModuleGuid = module.ModuleGuid;
-                sharedFile.OriginalFileName = fileName;
-                sharedFile.FriendlyName = fileName;
-                sharedFile.SizeInKB = (file.ContentLength / 1024);
-                sharedFile.FolderId = currentFolderId;
-                if (currentFolderId > -1)
-                {
-                    SharedFileFolder folder = new SharedFileFolder(ModuleId, currentFolderId);
-                    sharedFile.FolderGuid = folder.FolderGuid;
-                }
-                sharedFile.UploadUserId = CurrentUser.UserId;
-                sharedFile.UserGuid = CurrentUser.UserGuid;
-                sharedFile.UploadDate = DateTime.UtcNow;
-               
-                sharedFile.ContentChanged += new ContentChangedEventHandler(sharedFile_ContentChanged);
+			context.Response.ContentType = "text/plain";
 
+			List<UploadFilesResult> r = new List<UploadFilesResult>();
+			JavaScriptSerializer js = new JavaScriptSerializer();
 
-                //file.SaveAs(Server.MapPath("~/Files/" + fileName));
-                if (sharedFile.Save())
-                {
-                    string destPath = VirtualPathUtility.Combine(virtualSourcePath, sharedFile.ServerFileName);
+			if (!FileSystem.FolderExists(virtualSourcePath))
+			{
+				FileSystem.CreateFolder(virtualSourcePath);
+			}
 
-                    using (Stream s = file.InputStream)
-                    {
-                        FileSystem.SaveFile(destPath, s, IOHelper.GetMimeType(Path.GetExtension(sharedFile.FriendlyName).ToLower()), true);
-                    }
+			for (int f = 0; f < Request.Files.Count; f++)
+			{
+				HttpPostedFile file = Request.Files[f];
 
-                }
+				string fileName = Path.GetFileName(file.FileName);
 
+				SharedFile sharedFile;
 
-                r.Add(new UploadFilesResult()
-                {
-                    //Thumbnail_url = savedFileName,
-                    Name = fileName,
-                    Length = file.ContentLength,
-                    Type = file.ContentType
-                });
+				if ((itemId > -1) && (Request.Files.Count == 1))
+				{
+					// updating an existing file
+					sharedFile = new SharedFile(ModuleId, itemId);
 
-            }
+					if (config.EnableVersioning)
+					{
+						bool historyCreated = SharedFilesHelper.CreateHistory(sharedFile, FileSystem, virtualSourcePath, virtualHistoryPath);
 
-            CurrentPage.UpdateLastModifiedTime();
-            CacheHelper.ClearModuleCache(ModuleId);
-            SiteUtils.QueueIndexing();
+						if (historyCreated)
+						{
+							sharedFile.ServerFileName = $"{Guid.NewGuid().ToString()}.config";
+						}
+					}
+				}
+				else
+				{   // new file
+					sharedFile = new SharedFile();
+					sharedFile.ViewRoles = "All Users";
+				}
 
-            var uploadedFiles = new
-            {
-                files = r.ToArray()
-            };
-            var jsonObj = js.Serialize(uploadedFiles);
-            context.Response.Write(jsonObj.ToString());
+				sharedFile.ModuleId = ModuleId;
+				sharedFile.ModuleGuid = module.ModuleGuid;
+				sharedFile.OriginalFileName = fileName;
+				sharedFile.FriendlyName = fileName;
+				sharedFile.SizeInKB = (file.ContentLength / 1024);
+				sharedFile.FolderId = currentFolderId;
 
-            
+				if (currentFolderId > -1)
+				{
+					SharedFileFolder folder = new SharedFileFolder(ModuleId, currentFolderId);
+					sharedFile.FolderGuid = folder.FolderGuid;
+					sharedFile.ViewRoles = folder.ViewRoles;
+				}
 
-        }
+				sharedFile.UploadUserId = CurrentUser.UserId;
+				sharedFile.UserGuid = CurrentUser.UserGuid;
+				sharedFile.UploadDate = DateTime.UtcNow;
+				sharedFile.ContentChanged += new ContentChangedEventHandler(sharedFile_ContentChanged);
 
+				if (sharedFile.Save())
+				{
+					string destPath = VirtualPathUtility.Combine(virtualSourcePath, sharedFile.ServerFileName);
 
-        void sharedFile_ContentChanged(object sender, ContentChangedEventArgs e)
-        {
-            IndexBuilderProvider indexBuilder = IndexBuilderManager.Providers["SharedFilesIndexBuilderProvider"];
-            if (indexBuilder != null)
-            {
-                indexBuilder.ContentChangedHandler(sender, e);
-            }
-        }
+					using (Stream s = file.InputStream)
+					{
+						FileSystem.SaveFile(destPath, s, IOHelper.GetMimeType(Path.GetExtension(sharedFile.FriendlyName).ToLower()), true);
+					}
+				}
+
+				r.Add(new UploadFilesResult()
+				{
+					Name = fileName,
+					Length = file.ContentLength,
+					Type = file.ContentType
+				});
+			}
+
+			CurrentPage.UpdateLastModifiedTime();
+			CacheHelper.ClearModuleCache(ModuleId);
+			SiteUtils.QueueIndexing();
+
+			var uploadedFiles = new
+			{
+				files = r.ToArray()
+			};
+
+			var jsonObj = js.Serialize(uploadedFiles);
+			context.Response.Write(jsonObj.ToString());
+		}
 
 
+		void sharedFile_ContentChanged(object sender, ContentChangedEventArgs e)
+		{
+			IndexBuilderProvider indexBuilder = IndexBuilderManager.Providers["SharedFilesIndexBuilderProvider"];
 
-        public bool IsReusable
-        {
-            get
-            {
-                return false;
-            }
-        }
-    }
+			if (indexBuilder != null)
+			{
+				indexBuilder.ContentChangedHandler(sender, e);
+			}
+		}
+
+
+		public bool IsReusable
+		{
+			get
+			{
+				return false;
+			}
+		}
+	}
 }

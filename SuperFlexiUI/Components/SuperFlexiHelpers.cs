@@ -4,15 +4,6 @@
 //
 // You must not remove this notice, or any other, from this software.
 //
-using log4net;
-using mojoPortal.Business;
-using mojoPortal.Business.WebHelpers;
-using mojoPortal.FileSystem;
-using mojoPortal.Web;
-using mojoPortal.Web.Framework;
-using mojoPortal.Web.UI;
-using Resources;
-using SuperFlexiBusiness;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -23,7 +14,15 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Xml;
-using System.Linq;
+using log4net;
+using mojoPortal.Business;
+using mojoPortal.Business.WebHelpers;
+using mojoPortal.FileSystem;
+using mojoPortal.Web;
+using mojoPortal.Web.Framework;
+using mojoPortal.Web.UI;
+using Resources;
+using SuperFlexiBusiness;
 
 namespace SuperFlexiUI
 {
@@ -44,7 +43,7 @@ namespace SuperFlexiUI
             {
                 settings = String.Format(
                     displaySettings.ModuleSettingsLinkFormat,
-                    WebUtils.GetSiteRoot() + "/Admin/ModuleSettings.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
+                    SiteUtils.GetNavigationSiteRoot() + "/Admin/ModuleSettings.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
                     SuperFlexiResources.SettingsLinkLabel);
 
                 if (!String.IsNullOrWhiteSpace(config.MarkupDefinitionName) && config.MarkupDefinitionName != "0")
@@ -53,7 +52,7 @@ namespace SuperFlexiUI
 					{
 						add = String.Format(
                       displaySettings.AddItemLinkFormat,
-                      WebUtils.GetSiteRoot() + "/SuperFlexi/Edit.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
+                      SiteUtils.GetNavigationSiteRoot() + "/SuperFlexi/Edit.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
                       SuperFlexiResources.AddItem);
                     }
 
@@ -61,7 +60,7 @@ namespace SuperFlexiUI
                     {
                         header = String.Format(
                             displaySettings.EditHeaderLinkFormat,
-                            WebUtils.GetSiteRoot() + "/SuperFlexi/EditHeader.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
+                            SiteUtils.GetNavigationSiteRoot() + "/SuperFlexi/EditHeader.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
                             SuperFlexiResources.EditHeader);
                     }
 
@@ -69,7 +68,7 @@ namespace SuperFlexiUI
                     {
                         footer = String.Format(
                             displaySettings.EditFooterLinkFormat,
-                            WebUtils.GetSiteRoot() + "/SuperFlexi/EditHeader.aspx?f=true&pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
+                            SiteUtils.GetNavigationSiteRoot() + "/SuperFlexi/EditHeader.aspx?f=true&pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
                             SuperFlexiResources.EditFooter);
                     }
 
@@ -77,7 +76,7 @@ namespace SuperFlexiUI
                     {
                         import = String.Format(
                             displaySettings.ImportLinkFormat,
-                            WebUtils.GetSiteRoot() + "/SuperFlexi/Import.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
+                            SiteUtils.GetNavigationSiteRoot() + "/SuperFlexi/Import.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
                             SuperFlexiResources.ImportTitle);
                     }
 
@@ -85,7 +84,7 @@ namespace SuperFlexiUI
                     {
                         export = String.Format(
                             displaySettings.ExportLinkFormat,
-                            WebUtils.GetSiteRoot() + "/SuperFlexi/Export.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
+                            SiteUtils.GetNavigationSiteRoot() + "/SuperFlexi/Export.aspx?pageid=" + pageId.ToString() + "&amp;mid=" + moduleId.ToString(),
                             SuperFlexiResources.ExportTitle);
                     }
                 }
@@ -202,10 +201,10 @@ namespace SuperFlexiUI
             out StringBuilder sb)
         {
             sb = stringBuilder;
-            string featuredImageUrl = String.IsNullOrWhiteSpace(config.InstanceFeaturedImage) ? string.Empty : WebUtils.GetRelativeSiteRoot() + config.InstanceFeaturedImage;
+            string featuredImageUrl = String.IsNullOrWhiteSpace(config.InstanceFeaturedImage) ? string.Empty : WebUtils.GetApplicationRoot() + config.InstanceFeaturedImage;
             string jsonObjName = "sflexi" + moduleId.ToString() + (config.IsGlobalView ? "Modules" : "Items");
             string currentSkin = string.Empty;
-            string siteRoot = WebUtils.GetRelativeSiteRoot();
+            string siteRoot = SiteUtils.GetNavigationSiteRoot();
 			bool publishedOnCurrentPage = true;
 
 			if (HttpContext.Current != null && HttpContext.Current.Request.Params.Get("skin") != null)
@@ -349,7 +348,7 @@ namespace SuperFlexiUI
             return workingMarkupScripts;
         }
 
-		public static string GetPathToFile(ModuleConfiguration config, string path)
+		public static string GetPathToFile(ModuleConfiguration config, string path, bool forceHttps = false)
 		{
 			string goodPath = string.Empty;
 			if (path.StartsWith("/") ||
@@ -360,7 +359,7 @@ namespace SuperFlexiUI
 			}
 			else if (path.StartsWith("~/"))
 			{
-				return WebUtils.ResolveServerUrl(path);
+				return WebUtils.ResolveServerUrl(path, forceHttps);
 			}
 			else if (path.StartsWith("$_SitePath_$"))
 			{
@@ -376,6 +375,7 @@ namespace SuperFlexiUI
             List<MarkupScript> markupScripts,
             ModuleConfiguration config,
             SuperFlexiDisplaySettings displaySettings,
+			bool forceHttps,
             bool isEditable,
             bool isPostBack,
             string clientID,
@@ -397,31 +397,7 @@ namespace SuperFlexiUI
                 string scriptName = sbScriptName.ToString();
                 if (!String.IsNullOrWhiteSpace(script.Url))
                 {
-					//string scriptUrl = string.Empty;
-					//if (script.Url.StartsWith("/") ||
-					//	script.Url.StartsWith("http://") ||
-					//	script.Url.StartsWith("https://"))
-					//{
-					//	scriptUrl = script.Url;
-					//}
-					//else if (script.Url.StartsWith("~/"))
-					//{
-					//	scriptUrl = WebUtils.ResolveServerUrl(script.Url);
-					//}
-					//else if (script.Url.StartsWith("$_SitePath_$"))
-					//{
-					//	scriptUrl = script.Url.Replace("$_SitePath_$", "/Data/Sites/" + CacheHelper.GetCurrentSiteSettings().SiteId.ToString() + "/");
-					//}
-					//else
-					//{
-					//	scriptUrl = new Uri(config.SolutionLocationUrl, script.Url).ToString();
-					//}
-					//else if (File.Exists(System.Web.Hosting.HostingEnvironment.MapPath(config.MarkupDefinitionFile)))
-					//{
-					//	FileInfo fileInfo = new FileInfo(System.Web.Hosting.HostingEnvironment.MapPath(config.MarkupDefinitionFile));
-					//	scriptUrl = WebUtils.ResolveServerUrl(Path.Combine(fileInfo.DirectoryName.Replace(System.Web.Hosting.HostingEnvironment.MapPath("~"), "~/"), script.Url));
-					//}
-					string scriptUrl = GetPathToFile(config, script.Url);
+					string scriptUrl = GetPathToFile(config, script.Url, forceHttps);
 					sbScriptText.Append(string.Format(scriptRefFormat, scriptUrl, scriptName));
 				}
                 else if (!String.IsNullOrWhiteSpace(script.RawScript))
@@ -525,6 +501,7 @@ namespace SuperFlexiUI
             List<MarkupCss> markupCss,
             ModuleConfiguration config,
             SuperFlexiDisplaySettings displaySettings,
+			bool forceHttps,
             string clientID,
             int moduleID,
             int pageID,
@@ -554,7 +531,7 @@ namespace SuperFlexiUI
 					}
 					else if (style.Url.StartsWith("~/"))
 					{
-						styleUrl = WebUtils.ResolveServerUrl(style.Url);
+						styleUrl = WebUtils.ResolveServerUrl(style.Url, forceHttps);
 					}
 					else if (style.Url.StartsWith("$_SitePath_$"))
 					{
@@ -747,7 +724,7 @@ namespace SuperFlexiUI
 
             if (allForDefinition)
             {
-                items = Item.GetAllForDefinition(config.FieldDefinitionGuid, config.DescendingSort);
+                items = Item.GetAllForDefinition(config.FieldDefinitionGuid, module.SiteGuid, config.DescendingSort);
             }
             else
             {

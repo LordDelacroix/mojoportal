@@ -97,7 +97,7 @@ namespace SuperFlexiUI
 
             if (config.IsGlobalView)
             {
-                items = Item.GetAllForDefinition(config.FieldDefinitionGuid, config.DescendingSort);
+                items = Item.GetAllForDefinition(config.FieldDefinitionGuid, siteSettings.SiteGuid, config.DescendingSort);
             }
             else
             {
@@ -115,18 +115,18 @@ namespace SuperFlexiUI
 
                 if (SiteUtils.IsMobileDevice() && config.MobileMarkupScripts.Count > 0)
                 {
-                    SuperFlexiHelpers.SetupScripts(config.MobileMarkupScripts, config, displaySettings, IsEditable, IsPostBack, ClientID, ModuleId, PageId, Page, this);
+                    SuperFlexiHelpers.SetupScripts(config.MobileMarkupScripts, config, displaySettings, siteSettings.UseSslOnAllPages, IsEditable, IsPostBack, ClientID, ModuleId, PageId, Page, this);
                 }
                 else
                 {
-                    SuperFlexiHelpers.SetupScripts(config.MarkupScripts, config, displaySettings, IsEditable, IsPostBack, ClientID, ModuleId, PageId, Page, this);
+                    SuperFlexiHelpers.SetupScripts(config.MarkupScripts, config, displaySettings, siteSettings.UseSslOnAllPages, IsEditable, IsPostBack, ClientID, ModuleId, PageId, Page, this);
                 }
 
             }
 
             if (config.MarkupCSS.Count > 0)
             {
-                SuperFlexiHelpers.SetupStyle(config.MarkupCSS, config, displaySettings, ClientID, ModuleId, PageId, Page, this);
+                SuperFlexiHelpers.SetupStyle(config.MarkupCSS, config, displaySettings, siteSettings.UseSslOnAllPages, ClientID, ModuleId, PageId, Page, this);
             }
 
             //if (Page.IsPostBack) { return; }
@@ -139,7 +139,7 @@ namespace SuperFlexiUI
         {
             string featuredImageUrl = string.Empty;
 
-            featuredImageUrl = String.IsNullOrWhiteSpace(config.InstanceFeaturedImage) ? featuredImageUrl : WebUtils.GetRelativeSiteRoot() + config.InstanceFeaturedImage;
+            featuredImageUrl = String.IsNullOrWhiteSpace(config.InstanceFeaturedImage) ? featuredImageUrl : SiteUtils.GetNavigationSiteRoot() + config.InstanceFeaturedImage;
 
             //dynamic expando = new ExpandoObject();
 
@@ -171,7 +171,7 @@ namespace SuperFlexiUI
                 {
                     continue;
                 }
-                string itemEditUrl = WebUtils.GetSiteRoot() + "/SuperFlexi/Edit.aspx?pageid=" + pageId + "&mid=" + item.ModuleID + "&itemid=" + item.ItemID;
+                string itemEditUrl = SiteUtils.GetNavigationSiteRoot() + "/SuperFlexi/Edit.aspx?pageid=" + pageId + "&mid=" + item.ModuleID + "&itemid=" + item.ItemID;
 
                 //var itemModel = new ItemModel();
 

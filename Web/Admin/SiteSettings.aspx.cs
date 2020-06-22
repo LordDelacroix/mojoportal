@@ -1,21 +1,8 @@
-// Author:					
-// Created:				    2004-08-28
-// Last Modified:			2018-03-28
-// 
-// The use and distribution terms for this software are covered by the 
-// Common Public License 1.0 (http://opensource.org/licenses/cpl.php)
-// which can be found in the file CPL.TXT at the root of this distribution.
-// By using this software in any fashion, you are agreeing to be bound by 
-// the terms of this license.
-//
-// You must not remove this notice, or any other, from this software.
-// 2010-12-18 modifications by Jamie Eubanks to better support ldap fallback
-// 2011-03-01 improvements for multi site management accessibility, got rid of the autopostback dropdown now uses the SiteList.aspx page to select sites
-
 using log4net;
 using mojoPortal.Business;
 using mojoPortal.Business.WebHelpers;
 using mojoPortal.Business.WebHelpers.SiteCreatedEventHandlers;
+using mojoPortal.Net;
 using mojoPortal.Web.Controls.Captcha;
 using mojoPortal.Web.Editor;
 using mojoPortal.Web.Framework;
@@ -27,11 +14,12 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using System.Net.Mail;
 namespace mojoPortal.Web.AdminUI
 {
 
@@ -128,8 +116,8 @@ namespace mojoPortal.Web.AdminUI
 			}
 			else if (!WebConfigSettings.AllowMultipleSites)
 			{
-				litHostListHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsMultiTenancyTurnedOffLabel, string.Empty);
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsMultiTenancyTurnedOff, string.Empty);
+				litHostListHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsMultiTenancyTurnedOffLabel, string.Empty);
+				litHostMessage.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsMultiTenancyTurnedOff, string.Empty);
 				pnlAddFolder.Visible = false;
 				pnlAddHostName.Visible = false;
 				rptFolderNames.Visible = false;
@@ -156,14 +144,11 @@ namespace mojoPortal.Web.AdminUI
 				lblSiteGuid.Text = selectedSite.SiteGuid.ToString();
 			}
 
-#if!MONO
 			ISettingControl setting = timeZone as ISettingControl;
 			if (setting != null)
 			{
 				setting.SetValue(selectedSite.TimeZoneId);
 			}
-
-#endif
 
 			txtSlogan.Text = selectedSite.Slogan;
 			txtCompanyName.Text = selectedSite.CompanyName;
@@ -578,7 +563,7 @@ namespace mojoPortal.Web.AdminUI
 				&&((selectedSite.SiteId != WebConfigSettings.RelatedSiteID)||(selectedSiteID == -1))
 				)
 			{
-				if (WebConfigSettings.UseFoldersInsteadOfHostnamesForMultipleSites)
+				if (WebConfigSettings.UseFolderBasedMultiTenants)
 				{
 					liGeneralSecurity.Visible = false;
 					tabGeneralSecurity.Visible = false;
@@ -609,6 +594,7 @@ namespace mojoPortal.Web.AdminUI
 
 			DoTabSelection();
 			PopulateMailSettings();
+			fgpTestSMTPSettings.Visible = !WebConfigSettings.IsDemoSite;
 		}
 
 
@@ -702,17 +688,17 @@ namespace mojoPortal.Web.AdminUI
 			if(countOfOtherSites > 0 || selectedSiteID == -1)
 			{
 				
-				if (WebConfigSettings.UseFoldersInsteadOfHostnamesForMultipleSites)
+				if (WebConfigSettings.UseFolderBasedMultiTenants)
 				{
 					PopulateFolderList();
-					litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsHostNamesTurnedOff);
+					litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsHostNamesTurnedOff);
 					pnlAddHostName.Visible = false;
 					rptHosts.Visible = false;
 				}
 				else
 				{
 					PopulateHostList();
-					litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNamesTurnedOff);
+					litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNamesTurnedOff);
 					pnlAddFolder.Visible = false;
 					rptFolderNames.Visible = false;
 				}
@@ -731,8 +717,8 @@ namespace mojoPortal.Web.AdminUI
 				upFolderNames.Visible = false; // we can hide the entire thing because we're not using any of it
 
 				//set the host list header and message to state there aren't other sites.
-				litHostListHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsMultiTenancyNoOtherSitesLabel, string.Empty);
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, String.Format(Resource.SiteSettingsMultiTenancyNoOtherSites, SiteRoot + "/Admin/SiteSettings.aspx?SiteID=-1"));
+				litHostListHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsMultiTenancyNoOtherSitesLabel, string.Empty);
+				litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, String.Format(Resource.SiteSettingsMultiTenancyNoOtherSites, SiteRoot + "/Admin/SiteSettings.aspx?SiteID=-1"));
 			}
 
 
@@ -826,7 +812,7 @@ namespace mojoPortal.Web.AdminUI
 			if (selectedSiteID == -1)
 			{
 				// site must be created first
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsHostNamesAfterSiteCreated);
+				litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsHostNamesAfterSiteCreated);
 				rptHosts.Visible = false;
 				pnlAddHostName.Visible = false;
 				return;
@@ -843,7 +829,7 @@ namespace mojoPortal.Web.AdminUI
 			}
 			else
 			{
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsNoHostsFound);
+				litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsNoHostsFound);
 				rptHosts.Visible = false;
 			}
 		}
@@ -853,7 +839,7 @@ namespace mojoPortal.Web.AdminUI
 			if (selectedSiteID == -1)
 			{
 				// site must be created first
-				litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNamesAfterSiteCreated);
+				litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNamesAfterSiteCreated);
 				rptFolderNames.Visible = false;
 				pnlAddFolder.Visible = false;
 
@@ -866,7 +852,7 @@ namespace mojoPortal.Web.AdminUI
 				rptFolderNames.Visible = false;
 				pnlAddFolder.Visible = false;
 
-				litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNamesNotAllowedOnAdminSite);
+				litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNamesNotAllowedOnAdminSite);
 			}
 			else
 			{
@@ -879,7 +865,7 @@ namespace mojoPortal.Web.AdminUI
 				}
 				else
 				{
-					litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsNoFolderNames);
+					litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsNoFolderNames);
 					rptFolderNames.Visible = false;
 				}
 
@@ -896,11 +882,11 @@ namespace mojoPortal.Web.AdminUI
 				pnlSMTPSettingsWrapper.DontRender = true;
 				if (enableSiteSettingsSmtpSettings)
 				{
-					litSMTPSettingsHeader.Text += String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsSMTPSettingsAfterSiteCreated);
+					litSMTPSettingsHeader.Text += String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsSMTPSettingsAfterSiteCreated);
 				}
 				else
 				{
-					litSMTPSettingsHeader.Text += String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsSMTPSettingsDisabled);
+					litSMTPSettingsHeader.Text += String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsSMTPSettingsDisabled);
 				}
 				return;
 			}
@@ -984,7 +970,7 @@ namespace mojoPortal.Web.AdminUI
 			else
 			{
 				pnlSMTPSettingsWrapper.Visible = false;
-				litSMTPSettingsHeader.Text += String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsSMTPSettingsDisabled);
+				litSMTPSettingsHeader.Text += String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsSMTPSettingsDisabled);
 			}
 
 
@@ -1471,11 +1457,11 @@ namespace mojoPortal.Web.AdminUI
 				{
 					SiteSettings masterSite = CacheHelper.GetSiteSettings(WebConfigSettings.RelatedSiteID);
 					// siteSettings is the master site we need some permissions from it synced to the new site
-					SiteSettings.SyncRelatedSites(masterSite, WebConfigSettings.UseFoldersInsteadOfHostnamesForMultipleSites);
+					SiteSettings.SyncRelatedSites(masterSite, WebConfigSettings.UseFolderBasedMultiTenants);
 				}
 				else
 				{
-					SiteSettings.SyncRelatedSites(selectedSite, WebConfigSettings.UseFoldersInsteadOfHostnamesForMultipleSites);
+					SiteSettings.SyncRelatedSites(selectedSite, WebConfigSettings.UseFolderBasedMultiTenants);
 				}
 
 				// reset the sitesettings cache for each site
@@ -1524,7 +1510,107 @@ namespace mojoPortal.Web.AdminUI
 			return LdapHelper.TestUser(testLdapSettings, user.LoginName, txtLdapTestPassword.Text);
 		}
 
-		
+		private void btnTestSMTPSettings_Click(object sender, EventArgs e)
+		{
+			string validFormat = displaySettings.AlertNoticeMarkup;
+			string invalidFormat = displaySettings.AlertErrorMarkup;
+
+			btnTestSMTPSettings.Text = Resource.SiteSettingsTestSMTPSettingsButtonSending;
+			btnTestSMTPSettings.Enabled = false;
+
+			SmtpSettings smtpSettings = new SmtpSettings
+			{
+				Server = txtSMTPServer.Text,
+				PreferredEncoding = txtSMTPPreferredEncoding.Text,
+				UseSsl = chkSMTPUseSsl.Checked
+			};
+
+			try
+			{
+				smtpSettings.Port = Convert.ToInt32(txtSMTPPort.Text);
+			}
+			catch (FormatException)
+			{
+				litTestSMTPResult.Text = string.Format(invalidFormat, $"{Resource.SiteSettingsTestSMTPSettingsInvalidMessageDetailed}: 'Port invalid'");
+				ResetButton();
+				return;
+			}
+
+
+			if (chkSMTPRequiresAuthentication.Checked)
+			{
+				smtpSettings.RequiresAuthentication = true;
+				smtpSettings.User = txtSMTPUser.Text;
+				if (string.IsNullOrWhiteSpace(txtSMTPPassword.Text))
+				{
+					SmtpSettings savedSmtpSettings = SiteUtils.GetSmtpSettings();
+					smtpSettings.Password = savedSmtpSettings.Password;
+				}
+				else
+				{
+					smtpSettings.Password = txtSMTPPassword.Text;
+				}
+			}
+			
+			if (smtpSettings.IsValid)
+			{
+				string msg = ResourceHelper.GetMessageTemplate("TestEmailSettings.config");
+				string subj = ResourceHelper.GetMessageTemplate("TestEmailSettingsSubject.config");
+				if (string.IsNullOrWhiteSpace(subj))
+				{
+					subj = $"{siteSettings.SiteName} Email Test";
+				}
+				else
+				{
+					subj = subj.Replace("{SiteName}", siteSettings.SiteName);
+				}
+
+				StringBuilder message = new StringBuilder();
+				message.Append(string.IsNullOrWhiteSpace(msg) ? "If you're reading this, your email settings on your website are working fine." : msg);
+				message.Replace("{SiteName}", siteSettings.SiteName);
+				message.Replace("{AdminEmail}", txtSiteEmailFromAddress.Text);
+				string resultMessage = string.Empty;
+				bool result = Email.Send(
+					smtpSettings,
+					txtSiteEmailFromAddress.Text,
+					txtSiteEmailFromAlias.Text,
+					string.Empty,
+					txtTestSMTPEmailAddress.Text,
+					string.Empty,
+					string.Empty,
+					subj,
+					message.ToString(),
+					false,
+					"Normal",
+					out resultMessage);
+				if (result)
+				{
+					litTestSMTPResult.Text = string.Format(validFormat, Resource.SiteSettingsTestSMTPSettingsValidMessage);
+					ResetButton();
+					return;
+				}
+				else
+				{
+					//the mojoPortal.Net.Email class returns the messagebody with the error message so we need to strip it with a Replace below
+					litTestSMTPResult.Text = string.Format(invalidFormat, $"{Resource.SiteSettingsTestSMTPSettingsInvalidMessageDetailed}<br>{resultMessage.Replace(message.ToString(),"")}");
+					ResetButton();
+					return;
+				}
+			}
+			else
+			{
+				litTestSMTPResult.Text = string.Format(invalidFormat, Resource.SiteSettingsTestSMTPSettingsInvalidMessage);
+				ResetButton();
+				return;
+			}
+
+			void ResetButton()
+			{
+				btnTestSMTPSettings.Text = Resource.SiteSettingsTestSMTPSettingsButton;
+				btnTestSMTPSettings.Enabled = true;
+			}
+
+		}
 
 		private void btnAddFeature_Click(object sender, EventArgs e)
 		{
@@ -1544,7 +1630,7 @@ namespace mojoPortal.Web.AdminUI
 			}
 			else
 			{
-				litFeatureMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsSelectFeatureToAddWarning);
+				litFeatureMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsSelectFeatureToAddWarning);
 			}
 		}
 
@@ -1566,7 +1652,7 @@ namespace mojoPortal.Web.AdminUI
 			}
 			else
 			{
-				litFeatureMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsSelectFeatureToRemoveWarning);
+				litFeatureMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsSelectFeatureToRemoveWarning);
 			}
 		}
 
@@ -1641,13 +1727,13 @@ namespace mojoPortal.Web.AdminUI
 
 			if (this.txtHostName.Text.Length == 0)
 			{
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsHostNameRequiredMessage);
+				litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsHostNameRequiredMessage);
 				return;
 			}
 
 			if (SiteSettings.HostNameExists(txtHostName.Text))
 			{
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsDuplicateHostsWarning);
+				litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsDuplicateHostsWarning);
 				return;
 			}
 
@@ -1663,7 +1749,7 @@ namespace mojoPortal.Web.AdminUI
 			}
 			catch (DbException)
 			{
-				litHostMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsDuplicateHostsWarning);
+				litHostMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsDuplicateHostsWarning);
 			}
 
 			PopulateHostList(); 
@@ -1710,19 +1796,19 @@ namespace mojoPortal.Web.AdminUI
 			{
 				if (SiteFolder.Exists(txtFolderName.Text))
 				{
-					litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNameAlreadyInUseWarning);
+					litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNameAlreadyInUseWarning);
 					return;
 				}
 
 				if (!SiteFolder.IsAllowedFolder(txtFolderName.Text))
 				{
-					litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNameNotAllowedWarning);
+					litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNameNotAllowedWarning);
 					return;
 				}
 
 				if (SiteFolder.HasInvalidChars(txtFolderName.Text))
 				{
-					litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNameInvalidCharsWarning);
+					litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNameInvalidCharsWarning);
 					return;
 				}
 				
@@ -1737,7 +1823,7 @@ namespace mojoPortal.Web.AdminUI
 			}
 			else
 			{
-				litFolderMessage.Text = String.Format(displaySettings.SiteSettingsNoticeMarkup, Resource.SiteSettingsFolderNameBlankWarning);
+				litFolderMessage.Text = String.Format(displaySettings.AlertNoticeMarkup, Resource.SiteSettingsFolderNameBlankWarning);
 			}
 		}
 
@@ -1929,22 +2015,25 @@ namespace mojoPortal.Web.AdminUI
 				txtSMTPPassword.TextMode = TextBoxMode.SingleLine;
 			}
 
-			litMainSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityMainSettingsLabel, Resource.SiteSettingsSecurityMainSettingsDescription);
-			litSkinSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecuritySkinSettingsLabel, Resource.SiteSettingsSecuritySkinSettingsDescription);
-			litContentEditorSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityContentEditorSettingsLabel, Resource.SiteSettingsSecurityContentEditorSettingsDescription);
+			litMainSettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityMainSettingsLabel, Resource.SiteSettingsSecurityMainSettingsDescription);
+			litSkinSettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecuritySkinSettingsLabel, Resource.SiteSettingsSecuritySkinSettingsDescription);
+			litContentEditorSettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityContentEditorSettingsLabel, Resource.SiteSettingsSecurityContentEditorSettingsDescription);
 
-			litRegistrationSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityRegistrationSettingsLabel, Resource.SiteSettingsSecurityRegistrationSettingsDescription);
-			litUserAccountSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityUserAccountSettingsLabel, Resource.SiteSettingsSecurityUserAccountSettingsDescription);
-			litPasswordSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityPasswordSettingsLabel, Resource.SiteSettingsSecurityPasswordSettingsDescription);
+			litRegistrationSettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityRegistrationSettingsLabel, Resource.SiteSettingsSecurityRegistrationSettingsDescription);
+			litUserAccountSettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityUserAccountSettingsLabel, Resource.SiteSettingsSecurityUserAccountSettingsDescription);
+			litPasswordSettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityPasswordSettingsLabel, Resource.SiteSettingsSecurityPasswordSettingsDescription);
 
-			litPasswordRecoverySettingsHeader.Text = String.Format(displaySettings.SiteSettingsSubPanelHeadingMarkup, Resource.SiteSettingsSecurityPasswordRecoverySettingsLabel, Resource.SiteSettingsSecurityPasswordRecoverySettingsDescription);
+			litPasswordRecoverySettingsHeader.Text = String.Format(adminDisplaySettings.SiteSettingsSubPanelHeadingMarkup, Resource.SiteSettingsSecurityPasswordRecoverySettingsLabel, Resource.SiteSettingsSecurityPasswordRecoverySettingsDescription);
 
-			litOpenIDSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityOpenIDSettingsLabel, Resource.SiteSettingsSecurityOpenIDSettingsDescription);
-			litWindowsLiveIDSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityWindowsLiveIDSettingsLabel, Resource.SiteSettingsSecurityWindowsLiveIDSettingsDescription);
+			litOpenIDSettingsHeader.Text = string.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityOpenIDSettingsLabel, Resource.SiteSettingsSecurityOpenIDSettingsDescription);
+			litWindowsLiveIDSettingsHeader.Text = string.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSecurityWindowsLiveIDSettingsLabel, Resource.SiteSettingsSecurityWindowsLiveIDSettingsDescription);
 
-			litSMTPSettingsHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSMTPSettingsLabel, Resource.SiteSettingsSMTPSettingsDescription);
-			litHostListHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsExistingHostsLabel, Resource.SiteSettingsExistingHostsDescription);
-			litFolderNamesListHeader.Text = String.Format(displaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsExistingFolderMappingsLabel, Resource.SiteSettingsExistingFolderMappingsDescription);
+			litSMTPSettingsHeader.Text = string.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsSMTPSettingsLabel, Resource.SiteSettingsSMTPSettingsDescription);
+			litTestSMTPSettingsHeader.Text = string.Format(adminDisplaySettings.SiteSettingsSubPanelHeadingMarkup, Resource.SiteSettingsTestSMTPSettingsLabel, Resource.SiteSettingsTestSMTPSettingsDescription);
+			btnTestSMTPSettings.Text = Resource.SiteSettingsTestSMTPSettingsButton;
+
+			litHostListHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsExistingHostsLabel, Resource.SiteSettingsExistingHostsDescription);
+			litFolderNamesListHeader.Text = String.Format(adminDisplaySettings.SiteSettingsPanelHeadingMarkup, Resource.SiteSettingsExistingFolderMappingsLabel, Resource.SiteSettingsExistingFolderMappingsDescription);
 
 			litSettingsTab.Text = Resource.SiteSettingsGeneralSettingsTab;
 
@@ -2095,7 +2184,7 @@ namespace mojoPortal.Web.AdminUI
 			lblErrorMessage.Text = String.Empty;
 			isAdmin = WebUser.IsAdmin;
 			isContentAdmin = WebUser.IsContentAdmin || SiteUtils.UserIsSiteEditor();
-			useFolderForSiteDetection = WebConfigSettings.UseFoldersInsteadOfHostnamesForMultipleSites;
+			useFolderForSiteDetection = WebConfigSettings.UseFolderBasedMultiTenants;
 			fgpShowPasswordStrength.Visible = WebConfigSettings.EnableAjaxControlPasswordStrength;
 
 #if!MONO
@@ -2255,7 +2344,7 @@ namespace mojoPortal.Web.AdminUI
 			chkRequireApprovalForLogin.CheckedChanged += new EventHandler(chkRequireApprovalForLogin_Changed);
 			//ddSiteList.SelectedIndexChanged += new EventHandler(ddSiteList_SelectedIndexChanged);
 			ddDefaultCountry.SelectedIndexChanged += new EventHandler(ddDefaultCountry_SelectedIndexChanged);
-
+			btnTestSMTPSettings.Click += new EventHandler(btnTestSMTPSettings_Click);
 			SuppressMenuSelection();
 			SuppressPageMenu();
 			//ScriptConfig.IncludeYuiTabs = true;

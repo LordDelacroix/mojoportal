@@ -1008,4 +1008,10 @@
   <data name="UsePostTitleAsPageHeadingSetting" xml:space="preserve">
     <value>Use Post Titles as Page Heading?</value>
   </data>
+  <data name="DefaultUrlPrefix" xml:space="preserve">
+    <value>Default Post URL Prefix</value>
+  </data>
+  <data name="ExtraCssClassSetting" xml:space="preserve">
+    <value>Extra CSS Class</value>
+  </data>
 </root>
